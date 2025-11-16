@@ -17,21 +17,30 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: [e.g., PHP 8.2+, Laravel 10.x or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., Laravel, Passport.js, Supabase client, MUI or NEEDS CLARIFICATION]  
+**Storage**: [e.g., Supabase/PostgreSQL, Redis cache or NEEDS CLARIFICATION]  
+**Testing**: [e.g., PHPUnit, Jest, React Testing Library or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Web application, API server or NEEDS CLARIFICATION]
+**Project Type**: [monorepo with packages - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, <200ms response time or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, Supabase free tier limits or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 50 API endpoints, 20 UI screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Verify compliance with `.specify/memory/constitution.md` core principles:
+
+- [ ] **Monorepo Package Architecture**: Feature organized in `packages/` with frontend (`-frt`) and backend (`-srv`) separation if applicable. Each package has `base/` directory.
+- [ ] **Bilingual Documentation**: English documentation planned first, Russian translation follows with identical structure.
+- [ ] **Database-First with Supabase**: Uses Supabase/PostgreSQL with Passport.js authentication. Design extensible for other DBMS.
+- [ ] **Laravel Best Practices**: Follows Laravel conventions (Eloquent, service container, form requests, API resources). Frontend uses Material UI.
+- [ ] **Clean Architecture**: No legacy code replication. Uses established patterns (Clusters/Domains/Resources model).
+- [ ] **GitHub Process**: Issue created before implementation, proper labels applied, PR follows guidelines.
+
+If any principle cannot be met, document justification in Complexity Tracking section.
 
 ## Project Structure
 
@@ -51,48 +60,48 @@ specs/[###-feature]/
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
   for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
+  real paths (e.g., packages/clusters-frt, packages/clusters-srv). The delivered 
+  plan must not include Option labels.
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+# Monorepo structure (PNPM workspaces)
+packages/
+├── [feature-name]-frt/       # Frontend package (if applicable)
+│   ├── base/                 # Base implementation
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   ├── pages/
+│   │   │   └── services/
+│   │   └── tests/
+│   ├── package.json
+│   └── README.md (+ README-RU.md)
+│
+└── [feature-name]-srv/       # Backend package (if applicable)
+    ├── base/                 # Base implementation
+    │   ├── app/
+    │   │   ├── Models/
+    │   │   ├── Http/
+    │   │   │   ├── Controllers/
+    │   │   │   └── Requests/
+    │   │   └── Services/
+    │   ├── database/
+    │   │   └── migrations/
+    │   ├── routes/
+    │   └── tests/
+    │       ├── Feature/
+    │       └── Unit/
+    ├── composer.json
+    └── README.md (+ README-RU.md)
 
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+# Root configuration
+package.json              # PNPM workspace configuration
+pnpm-workspace.yaml      # Workspace definition
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+directories captured above. Specify whether this feature requires frontend-only,
+backend-only, or both packages.]
 
 ## Complexity Tracking
 
