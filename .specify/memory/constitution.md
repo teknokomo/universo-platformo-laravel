@@ -1,10 +1,18 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.0.0 → 1.1.0
+Version Change: 1.1.0 → 1.2.0
 Updated: 2025-11-16
 
-MINOR VERSION UPDATE - Deep check revealed critical gaps and ambiguities
+MINOR VERSION UPDATE - Enhanced monitoring process and entity pattern details
+
+Changes in 1.2.0:
+- ENHANCED: Principle VII - Added explicit monitoring process and frequency
+- ENHANCED: Principle VII - Added documentation requirements for discovered features
+- ENHANCED: Principle V - Expanded three-tier pattern with detailed example (Clusters/Domains/Resources)
+- ENHANCED: Principle V - Added variation details (2-tier, 4-5 tier hierarchies)
+- ENHANCED: Principle V - Added consistent elements across pattern adaptations
+- IMPROVED: Clarified relationship between reference repository monitoring and implementation
 
 Changes in 1.1.0:
 - FIXED: Technology Stack - Changed from PNPM to Composer as primary package manager
@@ -18,15 +26,13 @@ Changes in 1.1.0:
 
 Principles Updated:
 - I. Monorepo Package Architecture (FIXED: Composer, not PNPM)
-- V. Clean Architecture & Incremental Development (EXPANDED: entity patterns)
-- VII. Reference Implementation Alignment (NEW)
+- V. Clean Architecture & Incremental Development (EXPANDED in 1.1.0, ENHANCED in 1.2.0)
+- VII. Reference Implementation Alignment (NEW in 1.1.0, ENHANCED in 1.2.0)
 
 Templates Status:
 ✅ plan-template.md - Reviewed, constitution check section aligned
 ✅ spec-template.md - Reviewed, requirements align with principles
 ✅ tasks-template.md - Reviewed, task categorization supports principles
-
-Follow-up TODOs: Monitor universo-platformo-react repository for feature updates
 
 Deep Check Report: .specify/memory/constitution-deep-check-report.md
 -->
@@ -65,15 +71,25 @@ Deep Check Report: .specify/memory/constitution-deep-check-report.md
 
 Development MUST follow this incremental approach:
 
-1. **Base Entity Pattern**: Implement the three-tier entity structure (e.g., Clusters / Domains / Resources)
-   - Top-level aggregates (Clusters, Metaverses, Uniks)
-   - Middle-level groupings (Domains, Sections, Categories)
-   - Bottom-level items (Resources, Entities, Items)
+1. **Base Entity Pattern**: Implement the three-tier entity structure starting with Clusters feature
+   - **Example: Clusters / Domains / Resources**
+     - **Clusters** (Top-level): Primary container/aggregate organizing related domains
+     - **Domains** (Middle-level): Grouping within a cluster, categorizing resources
+     - **Resources** (Bottom-level): Individual items belonging to a domain
+   - Each tier has standard CRUD operations, relationships, and data model
+   - Implementation includes both frontend (clusters-frt) and backend (clusters-srv) packages
+   - Each entity has: unique identifier, name, description, timestamps, relationships
 
-2. **Pattern Adaptation**: Copy and adapt the base pattern for similar features (e.g., Metaverses / Sections / Entities uses the same structure with different entity names)
-   - Some features MAY use fewer tiers (e.g., only two levels)
-   - Some features MAY use more tiers (e.g., four or five levels in Uniks)
-   - Maintain consistent relationships and CRUD operations
+2. **Pattern Adaptation**: Copy and adapt the base pattern for similar features
+   - **Metaverses Feature**: Metaverses / Sections / Entities (identical structure, different names)
+   - **Variations by tier count**:
+     - **Two tiers**: Some features need only parent-child relationship
+     - **Four-five tiers**: Complex features like Uniks may need deeper hierarchies
+   - **Consistent elements across adaptations**:
+     - Standard CRUD operations (Create, Read, Update, Delete)
+     - Parent-child relationships with foreign keys
+     - Authorization and access control patterns
+     - Bilingual UI labels and documentation
 
 3. **Specialized Extensions**: Add feature-specific functionality on top of the base pattern
    - Node graph systems (Spaces / Canvases)
@@ -94,10 +110,17 @@ Development MUST follow this incremental approach:
 **MUST** use universo-platformo-react (https://github.com/teknokomo/universo-platformo-react) as the conceptual reference for feature design and architecture. This repository demonstrates the general concept of Universo Platformo across different technology stacks. However, **MUST NOT** replicate legacy code, particularly Flowise components that remain partially integrated in the React implementation. 
 
 Development **MUST**:
-- Analyze the React repository structure and feature patterns before implementing equivalent functionality
-- Monitor the React repository for new feature additions and implement corresponding features using the Laravel stack
+- Conduct careful, step-by-step, meticulous analysis of the React repository before implementing any feature
+- Monitor the React repository continuously as work progresses and implement new features that appear using the Laravel stack
+- Maintain feature parity by regularly reviewing the React implementation for updates and additions
 - Design each package with the expectation that multiple implementations may exist across different technology stacks
 - Avoid architectural shortcuts or incomplete refactorings present in the reference implementation
+
+**Monitoring Process**: As work progresses, team **MUST** establish a process to:
+- Regularly check the React repository for new commits and features (weekly or bi-weekly)
+- Document discovered features in Issues before implementation
+- Prioritize feature implementations based on project roadmap
+- Ensure Laravel implementation follows the conceptual pattern while using Laravel best practices
 
 **IMPORTANT**: The React version is still under active development and contains legacy code scheduled for removal. Extract the conceptual patterns and feature requirements, not the specific implementation details or technical debt.
 
@@ -157,4 +180,4 @@ This constitution supersedes all other development practices and patterns. All P
 
 **Compliance Review**: Constitution compliance is verified during specification review, implementation review, and before merging to main branch.
 
-**Version**: 1.1.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-16
+**Version**: 1.2.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-16

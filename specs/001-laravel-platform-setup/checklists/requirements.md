@@ -33,9 +33,22 @@
 
 **Status**: ✅ PASSED - All checklist items complete
 
+**Version**: 1.1 (Updated 2025-11-16)
+
+**Changes in v1.1**:
+- Added FR-020: Process for monitoring React repository for new features
+- Added FR-032-034: Detailed three-tier entity pattern requirements
+- Enhanced Key Entities: Expanded three-tier pattern and monitoring process definitions
+- Added SC-014-016: Success criteria for pattern documentation and monitoring
+- Enhanced User Story 1: Added acceptance scenarios for architecture documentation
+- Updated Dependencies: Added monitoring process requirements
+- Updated Out of Scope: Clarified React repository analysis as separate task
+
 **Notes**:
 - This is an infrastructure/setup feature, so functional requirements necessarily include some technical specificity (e.g., package naming conventions, file structure)
 - Success criteria have been made technology-agnostic while remaining measurable
 - User stories focus on developer experience and productivity
+- Enhanced specification now includes comprehensive monitoring process and entity pattern guidance
+- All enhancements maintain testability and measurability
 - Ready to proceed with `/speckit.plan`
 

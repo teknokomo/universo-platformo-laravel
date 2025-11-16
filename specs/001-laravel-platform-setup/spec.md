@@ -20,6 +20,8 @@ A developer clones the repository and immediately understands the project struct
 1. **Given** an empty repository, **When** the setup is complete, **Then** the repository contains a clear monorepo structure with packages/ directory, README files in both languages, and proper .gitignore configuration
 2. **Given** a developer reads the main README, **When** they follow the structure documentation, **Then** they can locate the packages directory and understand the base/ folder convention for each package
 3. **Given** bilingual documentation exists, **When** comparing English and Russian versions, **Then** both versions have identical structure and line count with accurate translations
+4. **Given** architecture documentation exists, **When** a developer reads about entity patterns, **Then** they can understand the three-tier pattern (Clusters/Domains/Resources) and its variations in under 5 minutes
+5. **Given** documentation describes the monitoring process, **When** team members review it, **Then** they understand the schedule and process for tracking React repository updates
 
 ---
 
@@ -134,19 +136,23 @@ A frontend developer needs to build user interfaces. They can access a configure
 - **FR-015**: All README files and primary documentation MUST be available in both English and Russian with identical content structure
 - **FR-016**: Repository MUST include package.json for frontend build tools and asset management even though backend is PHP
 - **FR-017**: Frontend packages MUST be configured to work with a UI component library following Material Design principles
-- **FR-018**: Repository structure MUST support three-tier entity patterns (e.g., Clusters/Domains/Resources) commonly used across features
+- **FR-018**: Repository structure MUST support three-tier entity patterns (e.g., Clusters/Domains/Resources) commonly used across features with clear examples in architecture documentation
 - **FR-019**: Documentation MUST reference the React implementation at https://github.com/teknokomo/universo-platformo-react as a conceptual guide while noting it's partially implemented with legacy code
-- **FR-020**: Repository MUST include clear contribution guidelines in both English and Russian
-- **FR-021**: Package structure MUST support isolated development where packages can be extracted to separate repositories in the future
-- **FR-022**: Repository MUST include examples of proper GitHub Issue creation following .github/instructions/github-issues.md
-- **FR-023**: Repository MUST include examples of proper GitHub PR creation following .github/instructions/github-pr.md
-- **FR-024**: Repository MUST include guidelines for maintaining bilingual documentation following .github/instructions/i18n-docs.md
-- **FR-025**: Repository MUST use Laravel best practices for file organization, routing, and middleware configuration
-- **FR-026**: Database configuration MUST be abstracted enough to support future integration with databases beyond Supabase
-- **FR-027**: Repository MUST include composer.json at root level with workspace configuration for managing multiple packages
-- **FR-028**: Each package MUST have its own composer.json file for isolated dependency management
-- **FR-029**: Repository MUST include environment variable templates (.env.example) with all required configuration options documented
-- **FR-030**: Repository MUST NOT replicate poor implementations from the React version but should use Laravel best practices
+- **FR-020**: Documentation MUST include process for monitoring the React repository (weekly or bi-weekly) for new features and implementing them using Laravel stack
+- **FR-021**: Repository MUST include clear contribution guidelines in both English and Russian
+- **FR-022**: Package structure MUST support isolated development where packages can be extracted to separate repositories in the future
+- **FR-023**: Repository MUST include examples of proper GitHub Issue creation following .github/instructions/github-issues.md
+- **FR-024**: Repository MUST include examples of proper GitHub PR creation following .github/instructions/github-pr.md
+- **FR-025**: Repository MUST include guidelines for maintaining bilingual documentation following .github/instructions/i18n-docs.md
+- **FR-026**: Repository MUST use Laravel best practices for file organization, routing, and middleware configuration
+- **FR-027**: Database configuration MUST be abstracted enough to support future integration with databases beyond Supabase
+- **FR-028**: Repository MUST include composer.json at root level with workspace configuration for managing multiple packages
+- **FR-029**: Each package MUST have its own composer.json file for isolated dependency management
+- **FR-030**: Repository MUST include environment variable templates (.env.example) with all required configuration options documented
+- **FR-031**: Repository MUST NOT replicate poor implementations from the React version but should use Laravel best practices
+- **FR-032**: Architecture documentation MUST include detailed three-tier entity pattern with Clusters/Domains/Resources as the reference implementation
+- **FR-033**: Architecture documentation MUST describe pattern variations including two-tier, four-tier, and five-tier entity hierarchies
+- **FR-034**: Architecture documentation MUST define standard CRUD operations, relationships, and data models for entity patterns
 
 ### Key Entities
 
@@ -162,7 +168,18 @@ A frontend developer needs to build user interfaces. They can access a configure
 
 - **Authentication Token**: OAuth2 token generated by Laravel Passport, used for authenticating users through Supabase, following security best practices for token storage and validation.
 
-- **Three-Tier Entity Pattern**: Common data structure pattern used across features consisting of primary entity (e.g., Cluster), secondary entity (e.g., Domain), and tertiary entity (e.g., Resource), with variations depending on specific feature requirements.
+- **Three-Tier Entity Pattern**: Common data structure pattern used across features consisting of:
+  - **Primary Entity** (e.g., Cluster, Metaverse, Unik): Top-level aggregate organizing related secondary entities
+  - **Secondary Entity** (e.g., Domain, Section, Category): Middle-level grouping within a primary entity
+  - **Tertiary Entity** (e.g., Resource, Entity, Item): Bottom-level items belonging to a secondary entity
+  - Pattern includes standard CRUD operations, parent-child relationships, and bilingual UI elements
+  - Variations exist: two-tier (parent-child only), four-tier, or five-tier hierarchies depending on feature complexity
+
+- **Repository Monitoring Process**: Ongoing process to track the React implementation (universo-platformo-react) for new features, updates, and architectural patterns. Process includes:
+  - Regular review schedule (weekly or bi-weekly)
+  - Documentation of discovered features as GitHub Issues
+  - Prioritization for Laravel implementation
+  - Extraction of conceptual patterns while avoiding legacy code
 
 ## Success Criteria *(mandatory)*
 
@@ -181,6 +198,9 @@ A frontend developer needs to build user interfaces. They can access a configure
 - **SC-011**: Dependency management works correctly at both repository root and module levels without conflicts
 - **SC-012**: New developers can contribute their first documentation update within 30 minutes of cloning the repository by following bilingual documentation guidelines
 - **SC-013**: Project maintainers can verify adherence to platform best practices by reviewing 100% of setup files against standard patterns
+- **SC-014**: Architecture documentation clearly describes the three-tier entity pattern with concrete Clusters/Domains/Resources example that developers can reference in under 5 minutes
+- **SC-015**: Team can identify new features in the React repository and create corresponding implementation Issues within the monitoring cycle (weekly or bi-weekly reviews)
+- **SC-016**: Developers can understand and apply entity pattern variations (two-tier, four-tier, five-tier) to new features by reading pattern documentation in under 10 minutes
 
 ### Additional Context
 
@@ -195,17 +215,21 @@ A frontend developer needs to build user interfaces. They can access a configure
 - Development team includes members comfortable with both English and Russian languages for documentation verification
 
 **Dependencies**:
-- Reference implementation repository serves as conceptual guide for architecture patterns
+- Reference implementation repository (universo-platformo-react) serves as conceptual guide for architecture patterns
+- Ongoing access to React repository for monitoring new features and updates
 - Cloud database service availability for data operations
 - Repository platform access for configuration management
 - Standard authentication libraries and patterns
+- Team capacity for weekly or bi-weekly review of reference implementation
 
 **Out of Scope**:
+- Detailed analysis of React repository structure and features (separate task to be created)
 - Migration of specific features from reference implementation (covered in future specifications)
 - Complete authentication user interface (only framework setup)
 - Full database schema design (implemented per-feature)
 - Legacy code cleanup from reference version (handled in that repository)
 - Specific feature implementations like Clusters, Metaverses, Uniks (covered in separate specifications)
+- Implementation of node graph systems, LangChain integration, UPDL-nodes (future feature specifications)
 - Production deployment configuration (development setup only)
 - Performance optimization (handled per-feature)
 - Comprehensive testing infrastructure (basic setup only, expanded per-feature)
