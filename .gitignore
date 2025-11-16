@@ -1,102 +1,117 @@
-# editor
+# Editor
 .idea
 .gigaide
 .cursorrules
+.vscode/*
+!.vscode/settings.json
 
-# dependencies
+# Laravel
+/vendor
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# Dependencies
 **/node_modules
+**/vendor
 **/package-lock.json
 **/yarn.lock
+**/composer.lock
 
-## logs
+# Logs
 **/logs
 **/*.log
 
-## backup
+# Backup
 .backup
 
-## pnpm
+# PNPM
 .pnpm-store/
 
-## build
+# Build
 **/dist
 **/build
+/public/build
+/public/mix-manifest.json
 
-## temp
+# Temp
 **/tmp
 **/temp
 
-## test
+# Test
 **/coverage
+/.phpunit.cache
 
-# misc
+# Misc
 .DS_Store
+Thumbs.db
 
-## env
+# Environment
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env
+.env.backup
+.env.production
 
-## turbo
+# Turbo
 .turbo
 
-## secrets
+# Secrets
 **/*.key
 **/api.json
 
-## uploads
+# Uploads
 **/uploads
 
-## compressed
+# Compressed
 **/*.tgz
 
 # Local History for Visual Studio Code
 .history/
 
-## other keys
+# Keys and Certificates
 *.key
 *.keys
 *.priv
 *.rsa
 *.key.json
-
-## ssh keys
 *.ssh
 *.ssh-key
 .key-mrc
-
-## Certificate Authority
 *.ca
-
-## Certificate
 *.crt
-
-## Certificate Sign Request
 *.csr
-
-## Certificate
-*.der 
-
-## Key database file
+*.der
 *.kdb
-
-## OSCP request data
 *.org
-
-## PKCS #12
 *.p12
-
-## PEM-encoded certificate data
 *.pem
-
-## Random number seed
 *.rnd
-
-## SSLeay data
 *.ssleay
-
-## S/MIME message
 *.smime
 *.vsix
+
+# Laravel Passport
+/storage/oauth-private.key
+/storage/oauth-public.key
