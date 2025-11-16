@@ -20,10 +20,11 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Monorepo (Universo Platformo)**: `packages/[feature]-frt/base/`, `packages/[feature]-srv/base/`
+- **Frontend packages**: `packages/[feature]-frt/base/src/`, `packages/[feature]-frt/base/tests/`
+- **Backend packages**: `packages/[feature]-srv/base/app/`, `packages/[feature]-srv/base/tests/`
+- Paths shown below assume monorepo structure - adjust based on plan.md structure
+- Each package includes bilingual README.md and README-RU.md
 
 <!-- 
   ============================================================================
