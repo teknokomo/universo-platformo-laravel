@@ -1,25 +1,34 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: [NEW] → 1.0.0
-Created: 2025-11-16
+Version Change: 1.0.0 → 1.1.0
+Updated: 2025-11-16
 
-Initial Constitution - Established core principles for Universo Platformo Laravel
+MINOR VERSION UPDATE - Deep check revealed critical gaps and ambiguities
 
-Principles Established:
-- I. Monorepo Package Architecture
-- II. Bilingual Documentation (English/Russian)
-- III. Database-First with Supabase
-- IV. Laravel Best Practices
-- V. Clean Architecture & Incremental Development
-- VI. GitHub Process Compliance
+Changes in 1.1.0:
+- FIXED: Technology Stack - Changed from PNPM to Composer as primary package manager
+- FIXED: Clarified Laravel + Inertia.js + React architecture
+- ADDED: Principle VII - Reference Implementation Alignment with universo-platformo-react
+- EXPANDED: Principle V - Added three-tier entity pattern guidance
+- ADDED: Repository Initialization section to Development Workflow
+- ADDED: Exclusions section documenting what NOT to create
+- IMPROVED: Testing strategy aligned with actual tech stack
+- IMPROVED: Clearer separation of PHP and JavaScript tooling
+
+Principles Updated:
+- I. Monorepo Package Architecture (FIXED: Composer, not PNPM)
+- V. Clean Architecture & Incremental Development (EXPANDED: entity patterns)
+- VII. Reference Implementation Alignment (NEW)
 
 Templates Status:
 ✅ plan-template.md - Reviewed, constitution check section aligned
 ✅ spec-template.md - Reviewed, requirements align with principles
 ✅ tasks-template.md - Reviewed, task categorization supports principles
 
-Follow-up TODOs: None - all placeholders resolved
+Follow-up TODOs: Monitor universo-platformo-react repository for feature updates
+
+Deep Check Report: .specify/memory/constitution-deep-check-report.md
 -->
 
 # Universo Platformo Laravel Constitution
@@ -28,9 +37,9 @@ Follow-up TODOs: None - all placeholders resolved
 
 ### I. Monorepo Package Architecture
 
-**MUST** organize codebase as a monorepo with PNPM workspace management. Packages MUST reside in `packages/` directory. When functionality requires both frontend and backend, they MUST be separated into distinct packages (e.g., `packages/clusters-frt` and `packages/clusters-srv`). Each package MUST contain a root `base/` directory to accommodate future multiple implementations.
+**MUST** organize codebase as a monorepo with Composer managing PHP packages and workspaces. Packages MUST reside in `packages/` directory. When functionality requires both frontend and backend, they MUST be separated into distinct packages (e.g., `packages/clusters-frt` and `packages/clusters-srv`). Each package MUST contain a root `base/` directory to accommodate future multiple implementations. Frontend packages with React components MAY use NPM or PNPM for JavaScript dependencies separately from PHP dependencies.
 
-**Rationale**: This structure enables independent development and deployment of features while maintaining the flexibility to support multiple technology stack implementations within the same conceptual package.
+**Rationale**: This structure enables independent development and deployment of features while maintaining the flexibility to support multiple technology stack implementations within the same conceptual package. Composer is the standard for PHP/Laravel projects, while NPM/PNPM handles JavaScript asset compilation when needed.
 
 ### II. Bilingual Documentation (English/Russian)
 
@@ -44,17 +53,35 @@ Follow-up TODOs: None - all placeholders resolved
 
 **Rationale**: Supabase provides rapid development capabilities while maintaining PostgreSQL compatibility. Extensibility design prevents vendor lock-in.
 
-### IV. Laravel Best Practices
+### IV. Laravel Full-Stack with React Frontend
 
-**MUST** follow Laravel framework conventions and PHP best practices. This includes: Eloquent ORM for database operations, Laravel's service container for dependency injection, form request validation, resource controllers, and API resources. Front-end MUST use Material UI (MUI library) for consistent design language.
+**MUST** follow Laravel framework conventions and PHP best practices for backend implementation. This includes: Eloquent ORM for database operations, Laravel's service container for dependency injection, form request validation, resource controllers, and API resources. Frontend **MUST** use Laravel with Inertia.js to integrate React components. User interface **MUST** use Material UI (MUI library) for consistent design language. This creates a modern single-page application experience while maintaining Laravel's server-side routing and controllers.
 
-**Rationale**: Leverage Laravel's mature ecosystem and conventions for maintainable, scalable full-stack PHP applications.
+**Rationale**: Leverage Laravel's mature ecosystem for backend while using React + MUI for rich, interactive user interfaces. Inertia.js bridges these technologies without the complexity of a separate API layer.
 
 ### V. Clean Architecture & Incremental Development
 
-**MUST NOT** replicate legacy code or incomplete implementations from reference projects. Each feature MUST be implemented cleanly using established patterns. Development MUST follow incremental approach: basic entity structure first (e.g., Clusters/Domains/Resources), then adapt pattern for similar features (e.g., Metaverses/Sections/Entities), finally add specialized functionality (e.g., Spaces/Canvases with node graphs).
+**MUST NOT** replicate legacy code or incomplete implementations from reference projects, particularly Flowise components still present in universo-platformo-react. Each feature MUST be implemented cleanly using established patterns. 
 
-**Rationale**: Building on proven patterns accelerates development while maintaining code quality. Clean implementation prevents technical debt accumulation.
+Development MUST follow this incremental approach:
+
+1. **Base Entity Pattern**: Implement the three-tier entity structure (e.g., Clusters / Domains / Resources)
+   - Top-level aggregates (Clusters, Metaverses, Uniks)
+   - Middle-level groupings (Domains, Sections, Categories)
+   - Bottom-level items (Resources, Entities, Items)
+
+2. **Pattern Adaptation**: Copy and adapt the base pattern for similar features (e.g., Metaverses / Sections / Entities uses the same structure with different entity names)
+   - Some features MAY use fewer tiers (e.g., only two levels)
+   - Some features MAY use more tiers (e.g., four or five levels in Uniks)
+   - Maintain consistent relationships and CRUD operations
+
+3. **Specialized Extensions**: Add feature-specific functionality on top of the base pattern
+   - Node graph systems (Spaces / Canvases)
+   - LangChain integration for AI workflows
+   - UPDL-nodes for custom logic
+   - Real-time collaboration features
+
+**Rationale**: Building on proven patterns accelerates development while maintaining code quality. Clean implementation prevents technical debt accumulation. The three-tier pattern provides a flexible foundation that scales across diverse feature requirements.
 
 ### VI. GitHub Process Compliance
 
@@ -62,17 +89,42 @@ Follow-up TODOs: None - all placeholders resolved
 
 **Rationale**: Consistent process ensures traceability, proper project tracking, and team coordination.
 
+### VII. Reference Implementation Alignment
+
+**MUST** use universo-platformo-react (https://github.com/teknokomo/universo-platformo-react) as the conceptual reference for feature design and architecture. This repository demonstrates the general concept of Universo Platformo across different technology stacks. However, **MUST NOT** replicate legacy code, particularly Flowise components that remain partially integrated in the React implementation. 
+
+Development **MUST**:
+- Analyze the React repository structure and feature patterns before implementing equivalent functionality
+- Monitor the React repository for new feature additions and implement corresponding features using the Laravel stack
+- Design each package with the expectation that multiple implementations may exist across different technology stacks
+- Avoid architectural shortcuts or incomplete refactorings present in the reference implementation
+
+**IMPORTANT**: The React version is still under active development and contains legacy code scheduled for removal. Extract the conceptual patterns and feature requirements, not the specific implementation details or technical debt.
+
+**Rationale**: Maintains consistency and feature parity across Universo Platformo implementations while preventing propagation of technical debt. Enables learning from the reference implementation's successes while avoiding its incomplete refactoring efforts.
+
 ## Technology Stack Requirements
 
-**Framework**: Laravel (latest stable) with PHP 8.2+
-**Package Manager**: PNPM for monorepo workspace management
-**Database**: Supabase (PostgreSQL-based) with extensibility for other DBMS
-**Authentication**: Passport.js with Supabase connector
-**Frontend Library**: Material UI (MUI)
-**Testing**: PHPUnit for backend, Jest/React Testing Library for frontend packages
+**Backend Framework**: Laravel (latest stable) with PHP 8.2+  
+**Backend Package Manager**: Composer for PHP dependencies and workspace management  
+**Frontend Framework**: React with Laravel Inertia.js for SPA integration  
+**Frontend Library**: Material UI (MUI) for component design  
+**Frontend Build Tools**: Vite (Laravel default) for asset compilation  
+**Frontend Package Manager**: NPM or PNPM for JavaScript dependencies (separate from PHP)  
+**Database**: Supabase (PostgreSQL-based) with extensibility for other DBMS  
+**Authentication**: Passport.js with Supabase connector (or Laravel Sanctum + Supabase)  
+**Testing Backend**: PHPUnit or Pest for PHP/Laravel testing  
+**Testing Frontend**: Jest and React Testing Library for React component testing  
 **Version Control**: Git with feature branch workflow
 
 ## Development Workflow
+
+**Repository Initialization**: Before feature development begins, the repository MUST be properly initialized:
+- Create comprehensive bilingual README files (README.md in English, README-RU.md in Russian)
+- Establish GitHub labels according to `.github/instructions/github-labels.md`
+- Set up base project structure following Laravel conventions
+- Configure Composer workspaces for monorepo package management
+- Initialize frontend build tooling (Vite, Inertia.js)
 
 **Issue-First Development**: Before implementing any specification, an Issue MUST be created in the repository with proper English/Russian bilingual content and appropriate labels.
 
@@ -81,6 +133,16 @@ Follow-up TODOs: None - all placeholders resolved
 **Specification Process**: Follow `.specify/` templates for plans, specifications, and tasks. Each feature MUST have complete documentation before implementation begins.
 
 **Code Review**: All changes MUST go through Pull Request review. PRs MUST reference related Issues and include both implementation and documentation updates.
+
+## Exclusions
+
+The following **MUST NOT** be created in this repository:
+
+**Documentation Directory**: Do NOT create a `docs/` directory. Project documentation will be maintained in a separate dedicated repository (docs.universo.pro domain) to separate documentation lifecycle from code development.
+
+**AI Agent Configuration Files**: Do NOT create additional AI agent configuration files beyond the existing `.github/agents/` directory. Users will create custom agent configurations as needed for their specific workflows. The existing agent files were established as part of the initial repository setup and should not be modified or extended without explicit user request.
+
+**Rationale**: Separating documentation enables independent versioning and publishing workflows. Limiting AI agent file creation preserves user control over development automation tooling and prevents configuration sprawl.
 
 ## Governance
 
@@ -95,4 +157,4 @@ This constitution supersedes all other development practices and patterns. All P
 
 **Compliance Review**: Constitution compliance is verified during specification review, implementation review, and before merging to main branch.
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-16
+**Version**: 1.1.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-16
