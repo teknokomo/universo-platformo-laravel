@@ -1,10 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.1.0 → 1.2.0
-Updated: 2025-11-16
+Version Change: 1.2.0 → 1.3.0
+Updated: 2025-11-17
 
-MINOR VERSION UPDATE - Enhanced monitoring process and entity pattern details
+MINOR VERSION UPDATE - Added shared infrastructure, API standards, security patterns, and build standards
+
+Changes in 1.3.0:
+- ADDED: Principle I - Shared infrastructure packages requirement (universo-types-srv, universo-utils-srv)
+- ADDED: Principle IV - API design standards (versioning, rate limiting, standardized responses)
+- ADDED: Principle IV - Authorization & security patterns (guards, IDOR prevention, SQL injection)
+- ENHANCED: Principle V - Database design patterns (CASCADE, JSONB, junction tables, idempotency)
+- ENHANCED: Principle V - Security patterns (authorization guards, rate limiting, query scopes)
+- ADDED: Principle VIII - Build and Deployment Standards (NEW principle)
+- IMPROVED: Comprehensive documentation of architectural patterns from React repository analysis
 
 Changes in 1.2.0:
 - ENHANCED: Principle VII - Added explicit monitoring process and frequency
@@ -25,9 +34,11 @@ Changes in 1.1.0:
 - IMPROVED: Clearer separation of PHP and JavaScript tooling
 
 Principles Updated:
-- I. Monorepo Package Architecture (FIXED: Composer, not PNPM)
-- V. Clean Architecture & Incremental Development (EXPANDED in 1.1.0, ENHANCED in 1.2.0)
-- VII. Reference Implementation Alignment (NEW in 1.1.0, ENHANCED in 1.2.0)
+- I. Monorepo Package Architecture (FIXED 1.1.0, ENHANCED 1.3.0 - shared packages)
+- IV. Laravel Full-Stack with React Frontend (ENHANCED 1.3.0 - API standards, security)
+- V. Clean Architecture & Incremental Development (EXPANDED 1.1.0, ENHANCED 1.2.0, ENHANCED 1.3.0 - database & security patterns)
+- VII. Reference Implementation Alignment (NEW 1.1.0, ENHANCED 1.2.0)
+- VIII. Build and Deployment Standards (NEW 1.3.0)
 
 Templates Status:
 ✅ plan-template.md - Reviewed, constitution check section aligned
@@ -45,7 +56,13 @@ Deep Check Report: .specify/memory/constitution-deep-check-report.md
 
 **MUST** organize codebase as a monorepo with Composer managing PHP packages and workspaces. Packages MUST reside in `packages/` directory. When functionality requires both frontend and backend, they MUST be separated into distinct packages (e.g., `packages/clusters-frt` and `packages/clusters-srv`). Each package MUST contain a root `base/` directory to accommodate future multiple implementations. Frontend packages with React components MAY use NPM or PNPM for JavaScript dependencies separately from PHP dependencies.
 
-**Rationale**: This structure enables independent development and deployment of features while maintaining the flexibility to support multiple technology stack implementations within the same conceptual package. Composer is the standard for PHP/Laravel projects, while NPM/PNPM handles JavaScript asset compilation when needed.
+**Shared Infrastructure Packages**: Repository MUST include shared infrastructure packages without -frt/-srv suffix for code used across multiple features. Required shared packages include:
+- **universo-types-srv**: PHP interfaces, contracts, enums, and DTOs for type consistency
+- **universo-utils-srv**: Helper functions, validators, data transformers for code reuse
+
+MAY include additional shared packages as needed (e.g., universo-api-client for frontend HTTP client wrapper with authentication).
+
+**Rationale**: This structure enables independent development and deployment of features while maintaining the flexibility to support multiple technology stack implementations within the same conceptual package. Composer is the standard for PHP/Laravel projects, while NPM/PNPM handles JavaScript asset compilation when needed. Shared infrastructure packages prevent code duplication and ensure consistency across the platform.
 
 ### II. Bilingual Documentation (English/Russian)
 
@@ -63,7 +80,11 @@ Deep Check Report: .specify/memory/constitution-deep-check-report.md
 
 **MUST** follow Laravel framework conventions and PHP best practices for backend implementation. This includes: Eloquent ORM for database operations, Laravel's service container for dependency injection, form request validation, resource controllers, and API resources. Frontend **MUST** use Laravel with Inertia.js to integrate React components. User interface **MUST** use Material UI (MUI library) for consistent design language. This creates a modern single-page application experience while maintaining Laravel's server-side routing and controllers.
 
-**Rationale**: Leverage Laravel's mature ecosystem for backend while using React + MUI for rich, interactive user interfaces. Inertia.js bridges these technologies without the complexity of a separate API layer.
+**API Design Standards**: All API endpoints MUST follow RESTful conventions with versioned URLs (e.g., /api/v1/resources). Responses MUST use standardized JSON format with success/error structure and appropriate HTTP status codes. Rate limiting MUST be implemented on all public endpoints using Laravel's throttle middleware (Redis storage recommended for production, in-memory acceptable for development). API resources MUST transform Eloquent models before returning to clients, controlling field exposure and adding computed properties.
+
+**Authorization & Security**: Multi-tenant features MUST implement application-level authorization guards to enforce data isolation between tenants. Guards MUST prevent IDOR (Insecure Direct Object Reference) attacks by validating ownership/permissions before allowing access to resources. This can be implemented using Laravel middleware, policy classes, or Eloquent global scopes. All database queries MUST use Eloquent ORM's parameterized queries to prevent SQL injection attacks.
+
+**Rationale**: Leverage Laravel's mature ecosystem for backend while using React + MUI for rich, interactive user interfaces. Inertia.js bridges these technologies without the complexity of a separate API layer. Explicit API standards prevent inconsistencies. Application-level authorization provides defense-in-depth security beyond database-level Row Level Security.
 
 ### V. Clean Architecture & Incremental Development
 
@@ -78,7 +99,17 @@ Development MUST follow this incremental approach:
      - **Resources** (Bottom-level): Individual items belonging to a domain
    - Each tier has standard CRUD operations, relationships, and data model
    - Implementation includes both frontend (clusters-frt) and backend (clusters-srv) packages
-   - Each entity has: unique identifier, name, description, timestamps, relationships
+   - Each entity has: unique identifier (UUID), name, description, timestamps, relationships
+   - **Database Design Patterns**:
+     - Foreign keys with CASCADE delete for parent-child relationships (deleting cluster removes all domains and resources)
+     - JSON/JSONB columns for flexible metadata schemas (e.g., resource metadata field)
+     - Junction tables with UNIQUE constraints for many-to-many relationships (prevents duplicate associations)
+     - Idempotent operations for relationship creation (safe retry behavior without duplicates)
+   - **Security Patterns**:
+     - Application-level authorization guards for data isolation (cluster-level tenant isolation)
+     - Rate limiting on API endpoints using Laravel throttle middleware (prevents DoS attacks)
+     - Eloquent query scopes for automatic tenant filtering
+     - IDOR attack prevention through ownership validation in policies
 
 2. **Pattern Adaptation**: Copy and adapt the base pattern for similar features
    - **Metaverses Feature**: Metaverses / Sections / Entities (identical structure, different names)
@@ -87,9 +118,10 @@ Development MUST follow this incremental approach:
      - **Four-five tiers**: Complex features like Uniks may need deeper hierarchies
    - **Consistent elements across adaptations**:
      - Standard CRUD operations (Create, Read, Update, Delete)
-     - Parent-child relationships with foreign keys
-     - Authorization and access control patterns
-     - Bilingual UI labels and documentation
+     - Parent-child relationships with foreign keys and CASCADE behavior
+     - Authorization and access control patterns (guards, policies, scopes)
+     - Bilingual UI labels and documentation (English + Russian)
+     - API versioning and standardized response format
 
 3. **Specialized Extensions**: Add feature-specific functionality on top of the base pattern
    - Node graph systems (Spaces / Canvases)
@@ -125,6 +157,16 @@ Development **MUST**:
 **IMPORTANT**: The React version is still under active development and contains legacy code scheduled for removal. Extract the conceptual patterns and feature requirements, not the specific implementation details or technical debt.
 
 **Rationale**: Maintains consistency and feature parity across Universo Platformo implementations while preventing propagation of technical debt. Enables learning from the reference implementation's successes while avoiding its incomplete refactoring efforts.
+
+### VIII. Build and Deployment Standards
+
+**MUST** maintain clear separation between source code and build artifacts. Backend PHP code uses Composer autoloading without compilation step. Frontend assets MUST be compiled via Vite (Laravel default) into public/ directory. Build artifacts (vendor/, node_modules/, dist/, public/build/) MUST be excluded from version control via .gitignore to prevent repository bloat and ensure consistent builds across environments.
+
+**MUST** follow Laravel asset conventions: raw source files in resources/js/ and resources/css/, compiled output in public/build/. Package-specific build outputs MUST be organized in package dist/ directories and excluded from repository. Frontend packages using React components MUST use Vite for bundling with proper code splitting and lazy loading.
+
+**MUST** document build requirements clearly: PHP version, Composer version, Node.js version, NPM/PNPM version. Development environment setup MUST be reproducible through documented steps or Docker configuration. Production builds MUST be optimized (minified JavaScript/CSS, optimized images, cached routes/views).
+
+**Rationale**: Prevents repository bloat from committing generated files. Ensures consistent builds across development, staging, and production environments. Follows Laravel framework expectations for asset handling. Enables efficient CI/CD pipelines with cacheable build artifacts.
 
 ## Technology Stack Requirements
 
@@ -180,4 +222,4 @@ This constitution supersedes all other development practices and patterns. All P
 
 **Compliance Review**: Constitution compliance is verified during specification review, implementation review, and before merging to main branch.
 
-**Version**: 1.2.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-16
+**Version**: 1.3.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-17
