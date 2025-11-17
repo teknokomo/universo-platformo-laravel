@@ -404,13 +404,17 @@ Comprehensive analysis of universo-platformo-react repository (documented in REA
 | Area | Decision | Key Rationale |
 |------|----------|---------------|
 | Supabase Client | supabase-community/supabase-php + native PostgreSQL | Balance between Supabase Auth features and Laravel patterns |
-| UI Library | Inertia.js + Vue.js + Vuetify 3.x | Material Design with Laravel best practices |
-| Authentication | Laravel Sanctum + Supabase integration | Recommended for SPAs, simpler than Passport |
-| Monorepo | Composer Path Repositories | Standard Composer monorepo pattern |
+| UI Library | Inertia.js + Vue.js 3 + Vuetify 3.x | Material Design 3 with Laravel best practices |
+| Authentication | Laravel Sanctum + Supabase JWT validation | Recommended for SPAs, simpler than Passport |
+| Monorepo Structure | Composer Path Repositories + Repository Pattern | Standard Composer pattern with DDD organization |
+| Package Architecture | Modular with DDD principles | Domain-driven, testable, maintainable |
+| API Design | URI Path Versioning (/api/v1/) | Industry standard, clear versioning |
+| Rate Limiting | Laravel throttle middleware + Redis | 60 req/min authenticated, 30 req/min guests |
 | Dev Cache | File-based (Redis for production) | Simpler developer onboarding |
 | GitHub Labels | Manual with documentation | Clear and sufficient for one-time setup |
 | Russian Files | -RU.md suffix (not .ru.md) | Constitution specification compliance |
 | Architectural Patterns | Adopt all patterns from React analysis | Proven patterns with security, scalability benefits |
+| Laravel Integration | Vite + Vuetify Plugin + Composition API | Modern frontend tooling with type safety |
 
 ## Dependencies Added
 
@@ -419,9 +423,15 @@ Comprehensive analysis of universo-platformo-react repository (documented in REA
 - `laravel/sanctum`: ^4.0 (included in Laravel 11, verify version)
 
 **NPM**:
-- `vuetify`: ^3.4.0 (Material Design components)
+- `vuetify`: ^3.4.0 (Material Design 3 components)
 - `@mdi/font`: ^7.0.0 (Material Design Icons for Vuetify)
 - `sass`: ^1.69.0 (Vuetify requires Sass)
+- `vite-plugin-vuetify`: latest (Vite optimization for Vuetify)
+
+**Development Tools** (Optional, Recommended):
+- PHP-CS-Fixer or Laravel Pint: Code style enforcement
+- PHPStan or Larastan: Static analysis
+- Pest or PHPUnit: Testing framework (PHPUnit included in Laravel 11)
 
 ## Next Steps
 
@@ -430,6 +440,391 @@ Phase 1 tasks:
 2. Generate contracts/ with API specifications for any setup endpoints
 3. Generate quickstart.md with detailed setup instructions
 4. Update agent context with technology decisions
+
+---
+
+### 9. Laravel Monorepo Best Practices and Patterns
+
+**Question**: What are the current best practices for Laravel 11 monorepo structure with Composer workspaces?
+
+**Research Findings** (from web search 2025-11-17):
+
+**Key Best Practices Identified**:
+
+1. **Domain-Driven Organization**:
+   - Organize packages by domain, feature, or service (not just technical function)
+   - Each package has own `composer.json` with dependencies and autoload config
+   - Use Composer workspaces to coordinate installs and updates at repo level
+
+2. **Repository Pattern for Maintainability**:
+   - Controllers remain slim; business/domain logic lives in repositories/services
+   - Each package exposes repositories via interfaces bound in service providers
+   - Enhances testability by mocking repositories
+   - Decouples data layer from business logic
+
+3. **Separation of Concerns**:
+   - Backend (Laravel) and frontend packages can be separated
+   - Shared libraries (domain models, utilities) reused by Laravel apps within monorepo
+   - Use PSR-4 autoloading for each package
+
+4. **CI/CD Optimization**:
+   - Use selective builds/tests for affected packages to avoid monorepo CI bottlenecks
+   - Enforce coding standards (PHP-CS-Fixer, ECS, Rector) at repo or package level
+   - Use dependency graphs to isolate changes
+
+**Decision**: Adopt **Repository Pattern with Domain-Driven Package Organization**
+
+**Rationale**:
+- Aligns with Laravel best practices and clean architecture principles
+- Repository pattern provides testable, decoupled architecture
+- Domain-driven organization supports the feature-based package structure (clusters, metaverses, etc.)
+- Enables isolated development and testing per package
+- Facilitates future extraction of packages to separate repositories
+
+**Implementation Notes**:
+- Each feature package will use Repository pattern for data access
+- Repositories bound via service providers in each package
+- Interface-based contracts in universo-types-srv package
+- Domain logic separated from controllers
+- Document repository pattern usage in ARCHITECTURE.md
+
+**References**:
+- [Laranext Monorepo Example](https://github.com/isaacdarcilla/laranext-monorepo/)
+- [Hosting PHP Packages in Monorepo - LogRocket](https://blog.logrocket.com/hosting-all-your-php-packages-together-in-a-monorepo/)
+- [Repository Pattern in Laravel Best Practices - WP Web Infotech](https://wpwebinfotech.com/blog/repository-pattern-in-laravel-project/)
+- [Laravel Best Practices: Repository Pattern - Shkodenko](https://www.shkodenko.com/laravel-best-practices-repository-pattern-for-clean-and-scalable-code/)
+
+---
+
+### 10. Laravel API Design Patterns and Versioning Strategy
+
+**Question**: What are the current best practices for Laravel REST API design, versioning, and rate limiting in 2025?
+
+**Research Findings** (from web search 2025-11-17):
+
+**API Design Best Practices**:
+
+1. **Standard HTTP Methods**: Map CRUD to HTTP verbs (GET, POST, PUT/PATCH, DELETE)
+2. **Consistent Naming**: Plural nouns for resources (e.g., `/api/users`), nested routes for relationships
+3. **API Resources**: Use Laravel's `JsonResource` for consistent JSON outputs
+4. **Pagination**: Always paginate large results; Laravel's built-in pagination includes meta info
+5. **Input Validation**: Centralize in controllers or API request classes
+6. **Error Handling**: Meaningful HTTP status codes and structured error responses
+
+**Versioning Best Practices**:
+
+1. **Version From Day One**: Even for new APIs to avoid breaking changes
+2. **URI Path Versioning** (Recommended): `/api/v1/resource` - most common and clear
+   - Easy to route and organize directories by version
+   - Example: `app/Http/Controllers/Api/V1`
+3. **Header Versioning**: Pass version in custom header (e.g., `X-API-Version: 1.0`)
+   - More complex but useful for microservices
+4. **Deprecation Policy**: Publish timelines, use HTTP `Sunset` header to inform clients
+
+**Rate Limiting Best Practices**:
+
+1. **Laravel Middleware**: Use `throttle` middleware (e.g., `throttle:60,1` for 60 req/min)
+2. **Layered Limits**: Different limits per route, user, or token
+   - Higher limits for authenticated users
+   - Stricter for guests
+3. **Custom Rate Limiters**: Implement for user roles or premium tiers
+4. **Storage Backend**: Redis recommended for production, in-memory acceptable for dev
+5. **Monitor & Log**: Track rate limit hits and abuse attempts
+
+**Decision**: Adopt **URI Path Versioning with Layered Rate Limiting**
+
+**Rationale**:
+- URI versioning is industry standard and most transparent
+- Layered rate limiting provides security without blocking legitimate users
+- Laravel's built-in throttle middleware handles most use cases
+- Redis storage enables distributed rate limiting in production
+- Aligns with constitution Principle IV requirements
+
+**Implementation Notes**:
+- All API routes under `/api/v1/` from start
+- Rate limiting: 60 req/min for authenticated, 30 req/min for guests
+- Use Laravel's `RateLimiter` facade in AppServiceProvider
+- API Resources for all model transformations
+- Document versioning strategy in ARCHITECTURE.md
+- Use Redis for rate limiting storage in production
+
+**References**:
+- [8 Laravel RESTful APIs Best Practices - Benjamin Crozat](https://benjamincrozat.com/laravel-restful-api-best-practices)
+- [Laravel 12 API Versioning Best Practices - Kritim Yantra](https://kritimyantra.com/blogs/laravel-12-api-versioning-best-practices-for-long-term-projects)
+- [API Versioning in Laravel 11 - Treblle API Academy](https://apiacademy.treblle.com/laravel-api-course/api-versioning)
+- [10 Must-Know REST API Best Practices - Web App Rater](https://webapprater.com/web-app-development/building-rest-apis-in-laravel.html)
+
+---
+
+### 11. Laravel + Supabase Authentication Integration
+
+**Question**: What is the best approach for integrating Supabase authentication with Laravel using Sanctum or Passport?
+
+**Research Findings** (from web search 2025-11-17):
+
+**Sanctum vs Passport for Supabase Integration**:
+
+**Laravel Sanctum**:
+- **Best for**: SPAs & mobile apps talking to their own backend
+- **Features**: Personal access tokens (PATs), cookie/session friendly, basic scopes/abilities
+- **Complexity**: Lightweight, simple setup
+- **Use Case**: First-party applications (like our Inertia.js SPA)
+- **Supabase Integration**: Custom middleware to validate Supabase JWT tokens
+
+**Laravel Passport**:
+- **Best for**: Third-party integrations, OAuth2 flows
+- **Features**: Full OAuth2 implementation, client/secret support, refresh tokens
+- **Complexity**: More setup overhead and operational complexity
+- **Use Case**: When external apps need delegated access
+- **Supabase Integration**: Overkill for typical Supabase auth flows
+
+**Integration Approach**:
+
+1. **Frontend**: Supabase handles user authentication (sign-in, sign-up)
+2. **Backend**: Laravel validates Supabase-signed JWT tokens
+3. **Trust Boundary**: API endpoints verify incoming JWT tokens before processing
+4. **Hybrid Option**: Use Sanctum for Laravel tokens + custom middleware for Supabase tokens
+
+**Security Best Practices**:
+- Validate JWT signature using Supabase's public keys
+- Check token expiration and revocation
+- Use HTTPS everywhere
+- Implement granular route middleware permissions
+- Apply rate limiting, input validation, RBAC
+
+**Decision**: **Laravel Sanctum with Custom Supabase JWT Validation Middleware** (confirmed from Research Task 3)
+
+**Rationale**:
+- Sanctum is Laravel's recommended solution for SPAs (matches Inertia.js architecture)
+- Custom middleware validates Supabase JWTs while maintaining Laravel patterns
+- Simpler than Passport for our first-party application use case
+- Allows hybrid auth: Sanctum tokens for API, Supabase for user management
+- Better alignment with Laravel ecosystem and conventions
+
+**Implementation Notes**:
+- Install Laravel Sanctum (included in Laravel 11)
+- Create custom middleware to validate Supabase JWT tokens
+- Use `auth:sanctum` guard for API routes
+- Sync Supabase users to Laravel database for local permissions/roles
+- Document authentication flow in quickstart.md
+- Use supabase-community/supabase-php for Auth integration
+
+**References**:
+- [Laravel Passport vs Sanctum Guide - Web App Rater](https://webapprater.com/web-app-development/laravel-passport-vs-sanctum.html)
+- [Laravel API Authentication - Server Avatar](https://serveravatar.com/laravel-api-authentication/)
+- [Laravel Sanctum vs Passport Strategy 2025 - Abbacus Tech](https://www.abbacustechnologies.com/laravel-sanctum-vs-passport-authentication-strategy-for-2025/)
+- [Building Secure APIs with Laravel Sanctum - Stalk Techie](https://stalktechie.com/post/building-secure-restful-apis-with-laravel-sanctum)
+
+---
+
+### 12. Laravel Package Development and Modular Architecture
+
+**Question**: What are the best practices for Laravel package development with modular architecture and Domain-Driven Design?
+
+**Research Findings** (from web search 2025-11-17):
+
+**Modular Architecture Benefits**:
+- **Separation of Concerns**: Each module handles distinct domain/business feature
+- **Team Independence**: Multiple teams work on separate modules without conflicts
+- **Scalability**: Add, rewrite, or replace features in isolation
+- **Isolated Testing**: Modules tested independently
+
+**Typical Modular Structure**:
+```
+src/
+└── Modules/
+    ├── Orders/
+    │   ├── Controllers/
+    │   ├── Models/
+    │   ├── Services/
+    │   ├── Routes/
+    │   └── Tests/
+    ├── Inventory/
+    └── Billing/
+```
+
+**Domain-Driven Design (DDD) Concepts for Laravel**:
+
+1. **Domain Layer**: Pure business logic, independent of framework
+   - Entities and Value Objects
+   - Aggregates (groups of entities)
+   - Domain Events
+   
+2. **Application Layer**: Orchestrates use cases
+   - Use Cases
+   - DTOs (Data Transfer Objects)
+
+3. **Infrastructure Layer**: Framework-specific implementations
+   - Eloquent Models
+   - External Services
+
+4. **Interfaces Layer**: Entry points
+   - HTTP Controllers
+   - Console Commands
+
+**DDD Folder Structure Example**:
+```
+app/
+├── Domain/
+│   ├── Invoice/
+│   │   ├── Entities/
+│   │   ├── ValueObjects/
+│   │   ├── Repositories/
+│   │   ├── Services/
+│   │   └── Events/
+│   └── ...
+├── Application/
+│   ├── UseCases/
+│   └── DTOs/
+├── Infrastructure/
+│   ├── EloquentModels/
+│   └── ExternalServices/
+└── Interfaces/
+    ├── Controllers/
+    └── CLI/
+```
+
+**Package Development Best Practices**:
+
+1. **Service Providers**: Bootstrap package—register bindings, events, routes
+2. **Configurability**: Sensible defaults with published config files
+3. **Testing**: Modular, isolated, automated tests
+4. **Documentation**: Clear architecture, installation, usage docs
+5. **Decoupling**: Avoid tight coupling with Laravel-specific classes
+
+**Decision**: **Adopt Modular Architecture with DDD Principles for Feature Packages**
+
+**Rationale**:
+- Aligns with constitution's package-based structure (clusters-frt, clusters-srv)
+- Each feature domain can be developed, tested, and deployed independently
+- Repository pattern (from Research Task 9) fits naturally with DDD
+- Supports the three-tier entity pattern (Clusters/Domains/Resources)
+- Enables future extraction to separate repositories
+- Maintains Laravel best practices
+
+**Implementation Approach**:
+
+1. **Start Simple**: Begin with Laravel default structure
+2. **Evolve to Modular**: Refactor as complexity grows
+3. **Clear Boundaries**: Define bounded contexts for each domain/module
+4. **Ubiquitous Language**: Consistent terminology across team
+5. **Service Providers**: Each package has its own service provider
+
+**Implementation Notes**:
+- Infrastructure packages (universo-types-srv, universo-utils-srv) follow package best practices
+- Feature packages (clusters, metaverses) use modular structure within base/ directory
+- Each package has service provider for registration
+- DTOs and contracts in universo-types-srv
+- Shared services and helpers in universo-utils-srv
+- Document package development guidelines in CONTRIBUTING.md
+
+**References**:
+- [Building Modular Systems in Laravel - Sevalla](https://sevalla.com/blog/building-modular-systems-laravel/)
+- [Laravel DDD Principles - MageComp](https://magecomp.com/blog/laravel-ddd-domain-driven-design-principles/)
+- [Domain Driven Design with Laravel 9 - HiBit](https://www.hibit.dev/posts/43/domain-driven-design-with-laravel-9)
+- [Laravel Clean Architecture DDD CQRS - GitHub](https://github.com/shahghasiadil/laravel-clean-architecture-ddd-cqrs)
+- [3 Crucial Laravel Architecture Best Practices - Benjamin Crozat](https://benjamincrozat.com/laravel-architecture-best-practices)
+
+---
+
+### 13. Laravel + Inertia.js + Vue 3 + Vuetify Integration Best Practices
+
+**Question**: What are the best practices for integrating Laravel with Inertia.js, Vue 3, and Vuetify (Material Design)?
+
+**Research Findings** (from web search and Context7 2025-11-17):
+
+**Project Setup & Structure**:
+
+1. **Starter Kits**: Reference repositories available:
+   - [laravel-viltify](https://github.com/MtDalPizzol/laravel-viltify) - Laravel + Vite + Inertia + Vuetify
+   - [laravel-inertiajs-vuetify-starterkit](https://github.com/akfaiz/laravel-inertiajs-vuetify-starterkit)
+   - These solve common integration pain points (Vite config, Vuetify theme, CSS conflicts)
+
+2. **Framework Integration Best Practices**:
+   - Define layouts in Vue, not Blade, for true SPA navigation
+   - Use named slots or composition API for dynamic layouts
+   - Separate entry points for different user types if needed
+   - Register Vuetify in main app file with all components/directives
+
+**Vuetify 3 + Material Design 3 Setup**:
+
+```javascript
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
+const vuetify = createVuetify({ components, directives })
+
+createInertiaApp({
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(vuetify)
+      .mount(el)
+  }
+})
+```
+
+**Material Design 3 Features** (Vuetify 3+):
+- Dynamic theming and color tokens
+- Dark mode switching via theme tools
+- MD3's typographic scale and component simplification
+- Improved accessibility (ARIA support, better contrast)
+- Built-in accessibility tools for WCAG compliance
+
+**Developer Experience Best Practices**:
+
+1. **TypeScript**: Use Vue 3's type-checking and composition API
+2. **Linting/Formatting**: ESLint + Prettier for consistent code quality
+3. **Component Structure**: Write reusable, composable components
+4. **Vite Plugin**: Use `vite-plugin-vuetify` for proper optimization
+
+**Performance & Build**:
+- Code splitting through Vite and Vue's async component import
+- Load only necessary resources per page/view
+- Environment variables: Separate client-side from server-side
+
+**Laravel Conventions** (from Context7):
+- Use Laravel's starter kit layouts (AuthLayout, AppLayout)
+- shadcn-vue components can be published for additional UI elements
+- ZiggyVue plugin for Laravel route helpers in Vue
+- Project structure in `resources/js/`:
+  - `components/` - Reusable Vue components
+  - `composables/` - Vue composables/hooks
+  - `layouts/` - Application layouts
+  - `pages/` - Page components
+  - `lib/` - Utility functions
+
+**Decision**: **Adopt Laravel + Inertia.js + Vue 3 + Vuetify 3 Stack** (confirmed from Research Task 2)
+
+**Rationale**:
+- Vuetify 3 provides comprehensive Material Design components
+- Inertia.js is Laravel's recommended SPA approach (simpler than separate API)
+- Vue.js 3 already configured in package.json
+- Maintains consistency with Material Design principles
+- Active community and documentation
+- Easier migration path for Laravel developers than React
+
+**Implementation Notes**:
+- Install Vuetify 3: `npm install vuetify@^3.0.0`
+- Install MDI icons: `npm install @mdi/font@^7.0.0`
+- Install Sass: `npm install sass@^1.69.0` (Vuetify requirement)
+- Configure Vite with `vite-plugin-vuetify`
+- Set up Inertia.js layout components with Vuetify theme
+- Implement dynamic theming (light/dark mode)
+- Use composition API for component logic
+- Document component patterns in ARCHITECTURE.md
+
+**References**:
+- [Ultimate Setup: Laravel 11 + Inertia.js + Vite + Vue 3 + Vuetify 3 - Dev Nightly](https://devnightly.com/ultimate-setup-laravel-11-with-inertia-js-vite-vue-3-and-vuetify-3/)
+- [Material Design 3: Next Generation Interfaces - Vuetify Blog](https://store.vuetifyjs.com/blogs/vuetify-blog/material-design-3-how-to-adapt-to-the-next-generation-of-interfaces)
+- [Enhancing Laravel and Inertia.js with TypeScript - Laravel.io](https://laravel.io/articles/enhancing-laravel-and-inertiajs-with-typescript-and-vue-3s-composition-api-to-build-a-powerful-spa)
+- [Laravel 12 and Vue 3 Ultimate Starter Guide - DEV Community](https://dev.to/robin-ivi/laravel-12-and-vue-3-ultimate-starter-guide-3bmd)
+
+---
 
 ## References
 
@@ -440,3 +835,5 @@ Phase 1 tasks:
 - Laravel Sanctum: https://laravel.com/docs/11.x/sanctum
 - Composer Documentation: https://getcomposer.org/doc/
 - Constitution v1.3.0: .specify/memory/constitution.md
+- Context7 Laravel 11.x Documentation: /websites/laravel-11.x
+- Context7 Inertia.js Documentation: /llmstxt/inertiajs-llms-full.txt
