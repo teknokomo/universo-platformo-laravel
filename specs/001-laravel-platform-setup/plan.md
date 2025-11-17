@@ -7,7 +7,7 @@
 
 ## Summary
 
-Establish foundation repository structure for Universo Platformo Laravel enabling modular development with bilingual international collaboration and scalable platform growth. This includes setting up monorepo architecture with Composer workspace management, configuring Supabase database integration with Laravel Passport authentication, establishing GitHub process compliance with bilingual documentation standards, and creating base infrastructure packages following the three-tier entity pattern established in the constitution. The technical approach uses Laravel 11.x with PHP 8.2+, Laravel Inertia.js for SPA integration, and Material UI for consistent design language.
+Establish foundation repository structure for Universo Platformo Laravel enabling modular development with bilingual international collaboration and scalable platform growth. This includes setting up monorepo architecture with Composer workspace management and Repository Pattern, configuring Supabase database integration with Laravel Sanctum authentication, establishing GitHub process compliance with bilingual documentation standards, and creating base infrastructure packages following the three-tier entity pattern established in the constitution. The technical approach uses Laravel 11.x with PHP 8.2+, Laravel Inertia.js for SPA integration, Vue.js 3, and Vuetify 3.x (Material Design 3) for consistent design language.
 
 ## Technical Context
 
@@ -46,7 +46,7 @@ Establish foundation repository structure for Universo Platformo Laravel enablin
 - Configuration: ~10 configuration files (.env, composer.json, vite.config, etc.)
 - GitHub setup: ~20 labels, issue/PR templates
 
-**Research Status**: ✅ All technical clarifications resolved in research.md
+**Research Status**: ✅ All technical clarifications resolved in research.md (Updated 2025-11-17 with Laravel best practices from web search and Context7)
 
 ## Constitution Check
 
@@ -56,8 +56,8 @@ Verify compliance with `.specify/memory/constitution.md` core principles:
 
 - [x] **Monorepo Package Architecture**: Repository will be organized as monorepo with packages/ directory. Initial setup includes infrastructure packages (universo-types-srv, universo-utils-srv) without frontend/backend suffix. Future feature packages will follow -frt/-srv separation pattern. Each package will have base/ directory for multiple implementation support.
 - [x] **Bilingual Documentation**: All documentation will be created in English first, followed by Russian translation with identical structure and line count. Applies to README files, GitHub Issues, and package documentation.
-- [x] **Database-First with Supabase**: Supabase will be configured as primary database. Laravel Passport will handle authentication. Database abstraction through Laravel's Eloquent ORM ensures extensibility to other DBMS.
-- [x] **Laravel Best Practices**: Following Laravel 11.x conventions: Eloquent ORM, service container, form request validation, resource controllers, API resources. Frontend using Inertia.js for SPA integration. Material UI patterns for consistent design (specific library to be researched in Phase 0).
+- [x] **Database-First with Supabase**: Supabase will be configured as primary database. Laravel Sanctum will handle authentication with custom Supabase JWT validation middleware. Database abstraction through Laravel's Eloquent ORM ensures extensibility to other DBMS.
+- [x] **Laravel Best Practices**: Following Laravel 11.x conventions: Eloquent ORM, service container, form request validation, resource controllers, API resources. Frontend using Inertia.js for SPA integration with Vue.js 3 and Vuetify 3.x (Material Design 3). Repository Pattern for maintainable, testable architecture with domain-driven package organization.
 - [x] **Clean Architecture**: No legacy code replication. Establishing clean patterns from start. Will document three-tier entity pattern (Clusters/Domains/Resources) as reference for future features.
 - [x] **GitHub Process**: Issue already exists for this work. Proper labels will be verified/created. PR will follow documented guidelines. All documentation follows i18n guidelines.
 
