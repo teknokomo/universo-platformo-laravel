@@ -19,50 +19,97 @@ This document describes the architectural decisions, patterns, and structure of 
 
 Universo Platformo Laravel is built as a modular monorepo application using Laravel 11.x and PHP 8.2+. The architecture emphasizes:
 
-- **Modularity**: Features are isolated in packages
+- **Modularity**: Features are isolated in packages - **MANDATORY REQUIREMENT**
 - **Scalability**: Packages can be extracted into separate repositories
 - **Maintainability**: Clear separation of concerns
 - **Testability**: Comprehensive test coverage
 - **Flexibility**: Abstracted database layer for multi-provider support
 
+### Critical Architectural Principle: Package-Based Modular Implementation
+
+**ALL functionality** (except common startup files, root configuration, and build scripts) **MUST** be implemented within packages in the `packages/` directory. This is a **non-negotiable requirement**:
+
+- ✅ **DO**: Create all features as packages in `packages/{feature}-frt/` and `packages/{feature}-srv/`
+- ✅ **DO**: Separate frontend and backend into distinct packages
+- ✅ **DO**: Include a `base/` directory in each package for the core implementation
+- ❌ **DON'T**: Implement feature functionality directly in `app/`, `resources/`, or other root directories
+- ❌ **DON'T**: Combine frontend and backend in a single package
+- ❌ **DON'T**: Create features without the package structure
+
+This modular structure is designed to support the long-term goal of extracting individual packages into separate repositories as the platform grows. Non-modular implementations violate the project constitution and will be rejected.
+
 ## Monorepo Structure
 
 ```
 universo-platformo-laravel/
-├── app/                          # Core Laravel application
-│   ├── Console/                  # Console commands
-│   ├── Exceptions/               # Exception handlers
-│   ├── Http/                     # HTTP layer
-│   │   ├── Controllers/          # Base controllers
-│   │   └── Middleware/           # HTTP middleware
-│   ├── Models/                   # Core models
-│   └── Providers/                # Service providers
-├── packages/                     # Feature packages
+├── app/                          # Core Laravel application (MINIMAL - only base classes)
+│   ├── Console/                  # Base console commands
+│   ├── Exceptions/               # Base exception handlers
+│   ├── Http/                     # HTTP layer (MINIMAL)
+│   │   ├── Controllers/          # Base controllers (abstract classes only)
+│   │   └── Middleware/           # Core HTTP middleware
+│   ├── Models/                   # Base models (abstract classes only)
+│   └── Providers/                # Core service providers
+├── packages/                     # ⭐ ALL FEATURE PACKAGES GO HERE ⭐
 │   ├── {feature}-frt/            # Frontend package
-│   └── {feature}-srv/            # Backend package
-├── bootstrap/                    # Application bootstrap
-├── config/                       # Configuration files
-├── database/                     # Database files
-│   ├── factories/                # Model factories
-│   ├── migrations/               # Database migrations
-│   └── seeders/                  # Database seeders
-├── public/                       # Public assets
-├── resources/                    # Views and raw assets
-│   ├── css/                      # Stylesheets
-│   ├── js/                       # JavaScript
-│   └── views/                    # Blade templates
-├── routes/                       # Route definitions
-│   ├── api.php                   # API routes
-│   ├── web.php                   # Web routes
+│   │   └── base/                 # Required base/ directory
+│   ├── {feature}-srv/            # Backend package
+│   │   └── base/                 # Required base/ directory
+│   ├── universo-types-srv/       # Shared types (no -frt/-srv suffix)
+│   └── universo-utils-srv/       # Shared utilities (no -frt/-srv suffix)
+├── bootstrap/                    # Application bootstrap (Laravel core)
+├── config/                       # Configuration files (Laravel core)
+├── database/                     # Database files (MINIMAL - core migrations only)
+│   ├── factories/                # Core model factories (package factories in packages/)
+│   ├── migrations/               # Core migrations (package migrations in packages/)
+│   └── seeders/                  # Core seeders (package seeders in packages/)
+├── public/                       # Public assets (compiled output only)
+├── resources/                    # Views and raw assets (MINIMAL - root app only)
+│   ├── css/                      # Core stylesheets (package styles in packages/)
+│   ├── js/                       # Core JavaScript (package JS in packages/)
+│   └── views/                    # Base Blade templates (package views in packages/)
+├── routes/                       # Route definitions (MINIMAL - core routes only)
+│   ├── api.php                   # API routes (package routes in packages/)
+│   ├── web.php                   # Web routes (package routes in packages/)
 │   └── console.php               # Console routes
-├── storage/                      # Storage files
+├── storage/                      # Storage files (Laravel core)
 │   ├── app/                      # Application files
 │   ├── framework/                # Framework files
 │   └── logs/                     # Log files
-└── tests/                        # Test files
-    ├── Feature/                  # Feature tests
-    └── Unit/                     # Unit tests
+└── tests/                        # Test files (core integration tests only)
+    ├── Feature/                  # Core feature tests (package tests in packages/)
+    └── Unit/                     # Core unit tests (package tests in packages/)
 ```
+
+### Root Directory Usage Rules
+
+**What MUST be in root directories** (MINIMAL usage only):
+- `artisan` - Laravel CLI script
+- `composer.json` - Root package manager with workspace configuration
+- `package.json` - Frontend build configuration
+- `vite.config.js` - Asset bundler configuration
+- `.env` and `.env.example` - Environment configuration
+- `app/` - ONLY abstract base classes, core middleware, and framework integration
+- `bootstrap/` - Laravel bootstrap files (framework requirement)
+- `config/` - Laravel configuration files
+- `public/` - Compiled assets and entry point (index.php)
+- `storage/` - Laravel runtime storage
+
+**What MUST be in packages/** (ALL feature functionality):
+- Controllers (feature-specific)
+- Models (domain entities)
+- Services (business logic)
+- API Resources (response transformers)
+- Form Requests (validation)
+- Policies (authorization)
+- Database migrations (feature-specific)
+- Database factories and seeders (feature-specific)
+- Routes (feature-specific)
+- Views and components (feature-specific)
+- Frontend JavaScript/Vue components (feature-specific)
+- Tests (feature-specific)
+
+**Key Principle**: If it relates to a specific feature or domain, it MUST be in a package. The root directories should contain ONLY what is absolutely necessary for framework bootstrapping and application-wide configuration.
 
 ### Why Monorepo?
 
@@ -78,9 +125,11 @@ Each package follows a consistent structure that allows it to be self-contained 
 
 ### Package Structure
 
+**MANDATORY**: Every package MUST have a `base/` directory as the root of its implementation. This design accommodates future multiple implementations of the same conceptual package.
+
 ```
 packages/feature-name-srv/
-├── base/                         # Base implementation
+├── base/                         # ⭐ REQUIRED base implementation directory
 │   ├── src/                      # PHP source code
 │   │   ├── Controllers/          # HTTP controllers
 │   │   ├── Models/               # Eloquent models
@@ -100,8 +149,25 @@ packages/feature-name-srv/
 │   │   └── Unit/                 # Unit tests
 │   ├── config/                   # Package configuration
 │   └── composer.json             # Package dependencies
-├── README.md                     # English documentation
-└── README.ru.md                  # Russian documentation
+├── README.md                     # English documentation (REQUIRED)
+└── README-RU.md                  # Russian documentation (REQUIRED)
+```
+
+**Frontend Package Structure** (`-frt`):
+```
+packages/feature-name-frt/
+├── base/                         # ⭐ REQUIRED base implementation directory
+│   ├── resources/                # Frontend resources
+│   │   ├── js/                   # Vue.js components
+│   │   │   ├── Components/       # Reusable components
+│   │   │   ├── Pages/            # Page components (Inertia)
+│   │   │   └── Composables/      # Vue composables
+│   │   └── css/                  # Component styles
+│   ├── routes/                   # Frontend routes (if applicable)
+│   └── tests/                    # Frontend tests
+│       └── Unit/                 # Component tests
+├── README.md                     # English documentation (REQUIRED)
+└── README-RU.md                  # Russian documentation (REQUIRED)
 ```
 
 ### Package Types
@@ -153,6 +219,26 @@ Each package has a service provider that registers:
 - Migrations
 - Commands
 - Policies
+
+## Reference Implementation Pattern
+
+This Laravel implementation follows the architectural patterns established in [universo-platformo-react](https://github.com/teknokomo/universo-platformo-react). The React repository serves as the **conceptual reference** for:
+
+- Package organization and naming conventions
+- Modular monorepo structure with workspace packages
+- Feature boundaries and domain separation
+- Three-tier entity patterns (see below)
+- Separation of frontend (-frt) and backend (-srv) packages
+- Base directory structure for future implementations
+
+**IMPORTANT**: 
+- ✅ **DO**: Extract conceptual patterns and feature designs from the React version
+- ✅ **DO**: Adapt patterns to Laravel/PHP best practices
+- ✅ **DO**: Monitor the React repository for new features and implement equivalents
+- ❌ **DON'T**: Replicate legacy code or incomplete implementations (particularly Flowise components)
+- ❌ **DON'T**: Copy poor implementation details - improve them in Laravel version
+
+The goal is to maintain feature parity and consistent architecture across both implementations while each uses best practices for its respective technology stack.
 
 ## Three-Tier Entity Pattern
 

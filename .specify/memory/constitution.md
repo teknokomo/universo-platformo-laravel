@@ -1,10 +1,17 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.2.0 → 1.3.0
+Version Change: 1.3.0 → 1.3.1
 Updated: 2025-11-17
 
-MINOR VERSION UPDATE - Added shared infrastructure, API standards, security patterns, and build standards
+PATCH VERSION UPDATE - Strengthened modular architecture requirements
+
+Changes in 1.3.1:
+- ENHANCED: Principle I - Added explicit prohibition of non-modular implementation
+- ENHANCED: Principle I - Added critical requirement section emphasizing MANDATORY modular structure
+- ENHANCED: Principle I - Added detailed package separation requirements
+- ENHANCED: Principle I - Emphasized long-term goal of extracting packages to separate repositories
+- IMPROVED: Clarified that non-modular implementation is constitution violation subject to code review rejection
 
 Changes in 1.3.0:
 - ADDED: Principle I - Shared infrastructure packages requirement (universo-types-srv, universo-utils-srv)
@@ -34,7 +41,7 @@ Changes in 1.1.0:
 - IMPROVED: Clearer separation of PHP and JavaScript tooling
 
 Principles Updated:
-- I. Monorepo Package Architecture (FIXED 1.1.0, ENHANCED 1.3.0 - shared packages)
+- I. Monorepo Package Architecture (FIXED 1.1.0, ENHANCED 1.3.0 - shared packages, ENHANCED 1.3.1 - mandatory modular implementation)
 - IV. Laravel Full-Stack with React Frontend (ENHANCED 1.3.0 - API standards, security)
 - V. Clean Architecture & Incremental Development (EXPANDED 1.1.0, ENHANCED 1.2.0, ENHANCED 1.3.0 - database & security patterns)
 - VII. Reference Implementation Alignment (NEW 1.1.0, ENHANCED 1.2.0)
@@ -56,13 +63,21 @@ Deep Check Report: .specify/memory/constitution-deep-check-report.md
 
 **MUST** organize codebase as a monorepo with Composer managing PHP packages and workspaces. Packages MUST reside in `packages/` directory. When functionality requires both frontend and backend, they MUST be separated into distinct packages (e.g., `packages/clusters-frt` and `packages/clusters-srv`). Each package MUST contain a root `base/` directory to accommodate future multiple implementations. Frontend packages with React components MAY use NPM or PNPM for JavaScript dependencies separately from PHP dependencies.
 
+**CRITICAL REQUIREMENT - Modular Implementation MANDATORY**: ALL functionality (except common startup files like `artisan`, root configuration files, and build scripts) MUST be implemented in packages within the `packages/` directory. It is ABSOLUTELY PROHIBITED to implement feature functionality outside of packages. Non-modular implementation violates this constitution and MUST be rejected in code review. This modular structure is NON-NEGOTIABLE as packages are designed as workspace packages in the monorepo with the explicit intention to extract them into separate repositories as the project evolves.
+
+**Package Separation Requirements**: When a feature requires both frontend and backend components:
+- Backend logic, API endpoints, models, migrations MUST be in `{feature}-srv` package
+- Frontend UI, components, views, client-side logic MUST be in `{feature}-frt` package
+- NEVER combine frontend and backend in a single package
+- Each package MUST have its own `base/` directory containing the implementation
+
 **Shared Infrastructure Packages**: Repository MUST include shared infrastructure packages without -frt/-srv suffix for code used across multiple features. Required shared packages include:
 - **universo-types-srv**: PHP interfaces, contracts, enums, and DTOs for type consistency
 - **universo-utils-srv**: Helper functions, validators, data transformers for code reuse
 
 MAY include additional shared packages as needed (e.g., universo-api-client for frontend HTTP client wrapper with authentication).
 
-**Rationale**: This structure enables independent development and deployment of features while maintaining the flexibility to support multiple technology stack implementations within the same conceptual package. Composer is the standard for PHP/Laravel projects, while NPM/PNPM handles JavaScript asset compilation when needed. Shared infrastructure packages prevent code duplication and ensure consistency across the platform.
+**Rationale**: This structure enables independent development and deployment of features while maintaining the flexibility to support multiple technology stack implementations within the same conceptual package. Composer is the standard for PHP/Laravel projects, while NPM/PNPM handles JavaScript asset compilation when needed. Shared infrastructure packages prevent code duplication and ensure consistency across the platform. The modular structure with package-based organization is essential for the long-term goal of extracting packages into separate repositories.
 
 ### II. Bilingual Documentation (English/Russian)
 
@@ -222,4 +237,4 @@ This constitution supersedes all other development practices and patterns. All P
 
 **Compliance Review**: Constitution compliance is verified during specification review, implementation review, and before merging to main branch.
 
-**Version**: 1.3.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-17
+**Version**: 1.3.1 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-17
