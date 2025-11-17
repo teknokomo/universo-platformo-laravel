@@ -342,6 +342,63 @@ Looking at existing repository structure:
 
 ---
 
+### 8. Architectural Patterns from React Repository Analysis
+
+**Question**: What architectural patterns from universo-platformo-react should be incorporated into this Laravel implementation?
+
+**Research Findings**:
+
+Comprehensive analysis of universo-platformo-react repository (documented in REACT_PATTERN_ANALYSIS.md) identified critical patterns for adoption:
+
+**Database Design Patterns**:
+- CASCADE delete constraints on foreign keys for referential integrity
+- JSONB columns for flexible metadata schemas
+- Junction tables with UNIQUE constraints to prevent duplicate associations
+- UUID primary keys for distributed compatibility
+- Idempotent operation design for safe retries
+
+**Security & Authorization Patterns**:
+- Application-level authorization guards for multi-tenant data isolation
+- Rate limiting on all public API endpoints to prevent DoS attacks
+- Eloquent query scopes for automatic tenant filtering
+- Ownership validation before resource access to prevent IDOR attacks
+- Parameterized queries exclusively via Eloquent ORM
+
+**API Design Standards**:
+- Versioned URLs (e.g., /api/v1/) for backward compatibility
+- Standardized JSON response format with success/error structure
+- Laravel API Resources for controlled model transformation
+- Appropriate HTTP status codes for all responses
+
+**Shared Infrastructure Pattern**:
+- universo-types-srv: PHP interfaces, contracts, enums, DTOs
+- universo-utils-srv: Helpers, validators, transformers
+- Centralized Laravel localization (lang/en/, lang/ru/)
+
+**Decision**: **Adopt all identified patterns** from React analysis
+
+**Rationale**:
+- Patterns proven in production React implementation
+- Align with Laravel best practices and ecosystem
+- Prevent common security vulnerabilities (IDOR, SQL injection, DoS)
+- Enable code reuse through shared infrastructure
+- Support future scalability and maintainability
+- Documented in constitution v1.3.0 (Principles I, IV, V, VIII)
+
+**Alternatives Considered**:
+- Selective adoption: Would miss critical security patterns
+- Delayed implementation: Would require refactoring later
+- Custom patterns: Would lose benefit of proven React patterns
+
+**Implementation Notes**:
+- All patterns documented in spec.md (FR-035 through FR-050)
+- Constitution updated to enforce patterns (v1.3.0)
+- Data model includes examples of CASCADE, JSONB, junction tables
+- Security patterns to be implemented in all future features
+- API versioning structure established from start
+
+---
+
 ## Summary of Decisions
 
 | Area | Decision | Key Rationale |
@@ -353,6 +410,7 @@ Looking at existing repository structure:
 | Dev Cache | File-based (Redis for production) | Simpler developer onboarding |
 | GitHub Labels | Manual with documentation | Clear and sufficient for one-time setup |
 | Russian Files | -RU.md suffix (not .ru.md) | Constitution specification compliance |
+| Architectural Patterns | Adopt all patterns from React analysis | Proven patterns with security, scalability benefits |
 
 ## Dependencies Added
 
