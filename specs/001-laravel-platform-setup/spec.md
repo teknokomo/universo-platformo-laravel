@@ -114,6 +114,16 @@ A frontend developer needs to build user interfaces. They can access a configure
 - What happens when a contributor creates an Issue without using the required spoiler tag format for Russian translation?
 - How does the system behave when trying to install packages on systems without Composer or with incompatible PHP versions?
 - What happens when developers reference the React implementation and try to directly port React-specific patterns that don't apply to Laravel?
+- What happens when deleting a parent entity (e.g., Cluster) that has children (e.g., Domains and Resources)? How is CASCADE behavior communicated to users?
+- How does the system handle duplicate relationship creation attempts (e.g., adding same resource to same domain twice)?
+- What happens when rate limit is exceeded for a specific IP address? What error message and HTTP status are returned?
+- How does the system prevent cross-tenant data access when user attempts to access resource in another user's cluster?
+- What happens when metadata JSON schema evolves over time (e.g., adding new required fields)? How are existing records migrated?
+- How does the system handle missing translations in one language when the other is complete? What fallback behavior is used?
+- What happens when frontend build fails due to syntax errors or missing dependencies? How is error communicated to developer?
+- How does the system behave when multiple API versions (/api/v1/, /api/v2/) need to coexist during migration period?
+- What happens when idempotent operation receives conflicting data (e.g., same IDs but different metadata)?
+- How does the system handle authorization guard failures when middleware chain is interrupted?
 
 ## Requirements *(mandatory)*
 
@@ -153,6 +163,22 @@ A frontend developer needs to build user interfaces. They can access a configure
 - **FR-032**: Architecture documentation MUST include detailed three-tier entity pattern with Clusters/Domains/Resources as the reference implementation
 - **FR-033**: Architecture documentation MUST describe pattern variations including two-tier, four-tier, and five-tier entity hierarchies
 - **FR-034**: Architecture documentation MUST define standard CRUD operations, relationships, and data models for entity patterns
+- **FR-035**: Repository MUST include shared infrastructure packages: universo-types-srv (PHP interfaces, contracts, enums), universo-utils-srv (helpers, validators, transformers)
+- **FR-036**: All database foreign keys MUST use CASCADE delete where parent-child relationship exists to maintain referential integrity
+- **FR-037**: Resources with flexible schemas MUST use JSON/JSONB columns for metadata storage to support extensible data models
+- **FR-038**: Junction tables for many-to-many relationships MUST have UNIQUE constraints on relationship pairs to prevent duplicate associations
+- **FR-039**: API endpoints MUST implement rate limiting to prevent DoS attacks, with reasonable limits per IP address
+- **FR-040**: Multi-tenant features MUST implement application-level authorization guards to enforce data isolation between tenants
+- **FR-041**: Idempotent operations MUST be used for relationship creation to ensure safe retry behavior without creating duplicates
+- **FR-042**: API responses MUST follow standardized JSON format with consistent success/error structure and appropriate HTTP status codes
+- **FR-043**: API routes MUST use versioning (e.g., /api/v1/) to support future backward-compatible changes
+- **FR-044**: Translation workflow MUST include validation of bilingual completeness to ensure 100% coverage in English and Russian
+- **FR-045**: Build artifacts (vendor/, node_modules/, dist/, public/build/) MUST be excluded via .gitignore to prevent repository bloat
+- **FR-046**: Frontend build output MUST be organized in public/ directory per Laravel conventions, with compiled assets in public/build/
+- **FR-047**: Each package MUST have bilingual README files (README.md and README-RU.md) with identical structure, not just root-level documentation
+- **FR-048**: Rate limiting MUST use appropriate storage backend (Redis recommended for production, in-memory acceptable for development)
+- **FR-049**: Database queries MUST use parameterized queries (Eloquent ORM) to prevent SQL injection attacks
+- **FR-050**: Authorization guards MUST prevent IDOR (Insecure Direct Object Reference) attacks by validating ownership before allowing resource access
 
 ### Key Entities
 
@@ -181,6 +207,18 @@ A frontend developer needs to build user interfaces. They can access a configure
   - Prioritization for Laravel implementation
   - Extraction of conceptual patterns while avoiding legacy code
 
+- **Shared Infrastructure Package**: Utility packages without -frt/-srv suffix containing shared code (types, utilities, internationalization) used across multiple feature packages. Examples: universo-types-srv (PHP interfaces, contracts, enums for type consistency), universo-utils-srv (helpers, validators, transformers for code reuse), Laravel localization files (lang/en/, lang/ru/ for translation management).
+
+- **Junction Table**: Database table representing many-to-many relationship between entities, with CASCADE delete constraints to remove relationships when parent is deleted, and UNIQUE constraint on relationship pairs to prevent duplicates. Used for flexible associations like resource-cluster, resource-domain, domain-cluster. Example: resources_domains table links resources to domains with columns (id, resource_id, domain_id, created_at) and unique constraint on (resource_id, domain_id).
+
+- **Authorization Guard**: Application-level middleware component that enforces data isolation and prevents cross-tenant access (IDOR attacks). Validates that authenticated user has permission to access specific cluster/domain/resource before allowing operation. Implemented as Laravel middleware or Eloquent global scopes. Example: ClusterGuard checks user_id matches cluster.user_id before allowing read/write operations.
+
+- **Idempotent Operation**: API operation that produces same result when called multiple times with same parameters, critical for reliability in distributed systems. For relationship creation: checks if relationship already exists before creating, returns success either way. Prevents duplicate entries when network requests are retried. Example: POST /clusters/{id}/domains/{domainId} creates association if missing, returns 200 OK if already exists.
+
+- **Rate Limiter**: Security component that restricts number of requests from single IP address within time window to prevent DoS attacks and resource exhaustion. Configuration includes window duration (e.g., 15 minutes), maximum requests (e.g., 100), and storage backend (Redis for production, in-memory for development). Returns 429 Too Many Requests when limit exceeded. Applied to all public API endpoints.
+
+- **API Resource**: Laravel class that transforms Eloquent models into JSON responses with controlled field exposure and computed properties. Provides consistent response format across API, hides internal fields, and adds API-specific fields like links or computed values. Example: ClusterResource transforms Cluster model into JSON with id, name, description, domains_count, and timestamps.
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
@@ -201,6 +239,15 @@ A frontend developer needs to build user interfaces. They can access a configure
 - **SC-014**: Architecture documentation clearly describes the three-tier entity pattern with concrete Clusters/Domains/Resources example that developers can reference in under 5 minutes
 - **SC-015**: Team can identify new features in the React repository and create corresponding implementation Issues within the monitoring cycle (weekly or bi-weekly reviews)
 - **SC-016**: Developers can understand and apply entity pattern variations (two-tier, four-tier, five-tier) to new features by reading pattern documentation in under 10 minutes
+- **SC-017**: Shared infrastructure packages (universo-types-srv, universo-utils-srv) are created and used by at least 2 feature packages, reducing code duplication
+- **SC-018**: Database relationships with CASCADE delete work correctly, measurable by deleting parent entity and verifying all children are automatically removed
+- **SC-019**: Authorization guards prevent cross-tenant data access, measurable by attempting unauthorized access to another tenant's resource returns 403 Forbidden
+- **SC-020**: Rate limiting prevents DoS attacks, measurable by exceeding configured limit returns 429 Too Many Requests status with appropriate retry-after header
+- **SC-021**: Translation completeness is 100% for both English and Russian across all user-facing strings, measurable by automated validation script
+- **SC-022**: API versioning allows multiple versions to coexist, measurable by /api/v1/ and /api/v2/ (future) routing independently without conflicts
+- **SC-023**: Idempotent operations handle retries safely, measurable by calling same relationship creation endpoint twice produces identical database state
+- **SC-024**: Build artifacts are properly excluded from repository, measurable by vendor/, node_modules/, dist/, public/build/ not appearing in git status
+- **SC-025**: All packages have bilingual READMEs with identical structure, measurable by automated line count comparison between README.md and README-RU.md
 
 ### Additional Context
 
