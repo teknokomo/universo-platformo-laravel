@@ -165,6 +165,43 @@ packages/
 
 **Structure Decision**: This is a repository initialization feature that sets up the foundation for all future work. It is primarily backend/infrastructure focused with some frontend tooling setup. The main Laravel application resides at the root level (standard Laravel structure), while the monorepo packages/ directory will host modular feature packages. Initial packages (universo-types-srv, universo-utils-srv) are shared infrastructure without -frt/-srv suffixes per constitution. Future feature packages like clusters will follow the -frt/-srv separation pattern.
 
+## Architectural Patterns from React Repository Analysis
+
+Based on comprehensive analysis of universo-platformo-react (documented in REACT_PATTERN_ANALYSIS.md), the following architectural patterns and best practices have been incorporated into this implementation plan:
+
+### Database Design Patterns
+- **CASCADE Deletes**: Foreign keys will use ON DELETE CASCADE for parent-child relationships to maintain referential integrity
+- **JSONB Metadata**: Flexible schema support using JSON/JSONB columns for extensible entity metadata
+- **Junction Tables**: Many-to-many relationships will use junction tables with UNIQUE constraints to prevent duplicate associations
+- **UUID Primary Keys**: All entities will use UUIDs for distributed system compatibility
+- **Idempotent Operations**: Relationship creation operations designed to handle retries safely without creating duplicates
+
+### Security & Authorization Patterns
+- **Application-Level Authorization Guards**: Multi-tenant features will implement guards to enforce data isolation and prevent IDOR attacks
+- **Rate Limiting**: All public API endpoints will implement rate limiting (Laravel throttle middleware) to prevent DoS attacks
+- **Query Scopes**: Eloquent global scopes for automatic tenant filtering
+- **Parameterized Queries**: Exclusive use of Eloquent ORM to prevent SQL injection attacks
+- **Ownership Validation**: Authorization guards validate ownership/permissions before allowing resource access
+
+### API Design Standards
+- **Versioned URLs**: All API routes use versioning pattern (e.g., /api/v1/) for backward compatibility
+- **Standardized Responses**: Consistent JSON format with success/error structure and appropriate HTTP status codes
+- **API Resources**: Laravel API Resources transform models before client exposure, controlling field visibility
+- **Error Handling**: Standardized error response format across all endpoints
+
+### Build & Deployment Standards
+- **Build Artifact Separation**: Clear separation between source code and build artifacts
+- **PHP Autoloading**: Composer autoloading for PHP code (no compilation step)
+- **Frontend Asset Compilation**: Vite compilation of Vue.js/CSS into public/build/
+- **Version Control Exclusions**: Build artifacts (vendor/, node_modules/, dist/, public/build/) excluded via .gitignore
+
+### Shared Infrastructure Pattern
+- **universo-types-srv**: PHP interfaces, contracts, enums, and DTOs for type consistency across packages
+- **universo-utils-srv**: Shared helper functions, validators, and data transformers for code reuse
+- **Laravel Localization**: Centralized translation management (lang/en/, lang/ru/)
+
+These patterns are documented in constitution v1.3.0 (Principles I, IV, V, VIII) and spec.md (FR-035 through FR-050).
+
 ## Complexity Tracking
 
 > **Constitution Check Status**: ✅ PASSED - No violations to justify
