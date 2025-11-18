@@ -22,6 +22,7 @@ tests/
 PHP 8.2+, Laravel 11.x: Follow standard conventions
 
 ## Recent Changes
+- 001-laravel-platform-setup: Added PHP 8.2+, Laravel 11.x
 
 - 001-laravel-platform-setup: Added PHP 8.2+, Laravel 11.x
 
