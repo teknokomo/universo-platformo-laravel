@@ -147,6 +147,89 @@ packages/
 - **Пакеты фронтенда** (`-frt`): UI компоненты, представления, клиентская логика, ресурсы фронтенда
 - **Пакеты бэкенда** (`-srv`): API endpoints, бизнес-логика, модели данных, миграции базы данных
 
+### Интеграция бэкенда и фронтенда с Inertia.js
+
+Laravel + Inertia.js устраняет необходимость в традиционном слое REST API между пакетами фронтенда и бэкенда. Вместо этого данные передаются напрямую из контроллеров Laravel в компоненты React.
+
+#### Паттерн интеграции
+
+**Пакет бэкенда** (`-srv`) предоставляет:
+- Контроллеры, использующие `Inertia::render()`
+- API Resources для преобразования данных
+- Form Requests для валидации
+- Policies для авторизации
+
+**Пакет фронтенда** (`-frt`) предоставляет:
+- Компоненты страниц React
+- Переиспользуемые UI компоненты (на основе MUI)
+- Утилиты на стороне клиента
+
+**Пример интеграции**:
+
+```php
+// Бэкенд: packages/clusters-srv/base/routes/api.php
+use Universo\Clusters\Controllers\ClusterController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/clusters', [ClusterController::class, 'index'])
+        ->name('clusters.index');
+    Route::post('/clusters', [ClusterController::class, 'store'])
+        ->name('clusters.store');
+});
+```
+
+```php
+// Бэкенд: packages/clusters-srv/base/src/Controllers/ClusterController.php
+use Inertia\Inertia;
+
+class ClusterController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Clusters/Index', [
+            'clusters' => ClusterResource::collection(
+                auth()->user()->clusters()->get()
+            )
+        ]);
+    }
+}
+```
+
+```jsx
+// Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.jsx
+import { Card, Typography } from '@mui/material'
+
+export default function Index({ clusters }) {
+    return (
+        <div>
+            <Typography variant="h4">Кластеры</Typography>
+            {clusters.data.map(cluster => (
+                <Card key={cluster.id}>
+                    <Typography>{cluster.name}</Typography>
+                </Card>
+            ))}
+        </div>
+    )
+}
+```
+
+#### Общие данные между пакетами
+
+Для данных, используемых в нескольких пакетах, используйте общие пакеты:
+- `universo-types-srv` - PHP интерфейсы и DTO
+- `universo-utils-srv` - Вспомогательные функции
+- В будущем: `universo-components-frt` - Общие компоненты React/MUI
+
+#### API endpoints для внешнего доступа
+
+Хотя Inertia.js обрабатывает рендеринг страниц, вам всё ещё могут понадобиться REST API endpoints для:
+- Мобильных приложений
+- Внешних интеграций
+- AJAX запросов
+- Webhook'ов
+
+Размещайте их в `routes/api.php` с соответствующими API Resources и аутентификацией.
+
 ### Зависимости
 
 - Пакеты должны объявлять свои собственные зависимости в своём `composer.json`

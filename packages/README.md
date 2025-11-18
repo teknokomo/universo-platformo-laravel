@@ -147,6 +147,89 @@ The **MANDATORY** `base/` subdirectory allows for future alternative implementat
 - **Frontend packages** (`-frt`): UI components, views, client-side logic, frontend assets
 - **Backend packages** (`-srv`): API endpoints, business logic, data models, database migrations
 
+### Backend-Frontend Integration with Inertia.js
+
+Laravel + Inertia.js eliminates the need for a traditional REST API layer between frontend and backend packages. Instead, data flows directly from Laravel controllers to React components.
+
+#### Integration Pattern
+
+**Backend Package** (`-srv`) provides:
+- Controllers that use `Inertia::render()`
+- API Resources for data transformation
+- Form Requests for validation
+- Policies for authorization
+
+**Frontend Package** (`-frt`) provides:
+- React page components
+- Reusable UI components (MUI-based)
+- Client-side utilities
+
+**Example Integration**:
+
+```php
+// Backend: packages/clusters-srv/base/routes/api.php
+use Universo\Clusters\Controllers\ClusterController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/clusters', [ClusterController::class, 'index'])
+        ->name('clusters.index');
+    Route::post('/clusters', [ClusterController::class, 'store'])
+        ->name('clusters.store');
+});
+```
+
+```php
+// Backend: packages/clusters-srv/base/src/Controllers/ClusterController.php
+use Inertia\Inertia;
+
+class ClusterController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Clusters/Index', [
+            'clusters' => ClusterResource::collection(
+                auth()->user()->clusters()->get()
+            )
+        ]);
+    }
+}
+```
+
+```jsx
+// Frontend: packages/clusters-frt/base/resources/js/Pages/Index.jsx
+import { Card, Typography } from '@mui/material'
+
+export default function Index({ clusters }) {
+    return (
+        <div>
+            <Typography variant="h4">Clusters</Typography>
+            {clusters.data.map(cluster => (
+                <Card key={cluster.id}>
+                    <Typography>{cluster.name}</Typography>
+                </Card>
+            ))}
+        </div>
+    )
+}
+```
+
+#### Shared Data Between Packages
+
+For data shared across packages, use shared packages:
+- `universo-types-srv` - PHP interfaces and DTOs
+- `universo-utils-srv` - Helper functions
+- Future: `universo-components-frt` - Shared React/MUI components
+
+#### API Endpoints for External Access
+
+While Inertia.js handles page rendering, you may still need REST API endpoints for:
+- Mobile apps
+- External integrations
+- AJAX requests
+- Webhooks
+
+Place these in `routes/api.php` with appropriate API Resources and authentication.
+
 ### Dependencies
 
 - Packages should declare their own dependencies in their `composer.json`

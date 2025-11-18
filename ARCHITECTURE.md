@@ -483,26 +483,289 @@ APIs are versioned in the URL:
 
 ## Frontend Architecture
 
-### Vue 3 Integration
+### Inertia.js with React Integration
 
-The frontend uses Vue 3 with Vite:
+The frontend uses **Inertia.js** to bridge Laravel backend with React frontend, creating a modern single-page application experience without building a separate API.
 
-```javascript
-import { createApp } from 'vue';
-import App from './App.vue';
+#### Architecture Overview
 
-const app = createApp(App);
-app.mount('#app');
+```
+Laravel Backend                    Inertia.js                    React Frontend
+┌──────────────┐                  ┌─────────┐                 ┌─────────────┐
+│  Controller  │  ───render()───> │ Inertia │  ────props───>  │ React Page  │
+│              │                   │         │                 │ Component   │
+│   Routes     │  <──Navigate───  │ Router  │  <──<Link>───   │             │
+└──────────────┘                  └─────────┘                 └─────────────┘
 ```
 
-### Material Design
+**Key Benefits**:
+- Server-side routing (no client-side router needed)
+- Automatic code splitting per page
+- Prefetching for instant navigation
+- Shared data via props (no REST API needed for pages)
+- Form handling with automatic error binding
 
-Material Design components are integrated for consistent UI:
+#### Page Resolution from Packages
 
-- Use Material Design principles
-- Consistent color palette
-- Responsive components
-- Accessibility features
+For modular architecture with packages, customize Inertia's page resolver:
+
+```javascript
+// resources/js/app.jsx
+import { createInertiaApp } from '@inertiajs/react'
+import { createRoot } from 'react-dom/client'
+
+createInertiaApp({
+  resolve: (name) => {
+    // Support both root pages and package pages
+    const pages = import.meta.glob([
+      './Pages/**/*.jsx',
+      '../../packages/*/base/resources/js/Pages/**/*.jsx',
+    ], { eager: true })
+    
+    return pages[`./Pages/${name}.jsx`] 
+      || pages[`../../packages/${name}.jsx`]
+  },
+  setup({ el, App, props }) {
+    createRoot(el).render(<App {...props} />)
+  },
+})
+```
+
+#### Data Flow Pattern
+
+**Backend Controller** → **Inertia Render** → **React Component**
+
+```php
+// Backend: packages/clusters-srv/base/src/Controllers/ClusterController.php
+namespace Universo\Clusters\Controllers;
+
+use Inertia\Inertia;
+use Universo\Clusters\Resources\ClusterResource;
+
+class ClusterController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Clusters/Index', [
+            'clusters' => ClusterResource::collection(
+                auth()->user()->clusters()
+                    ->with('domains')
+                    ->paginate(20)
+            ),
+            'filters' => request()->only(['search', 'sort']),
+        ]);
+    }
+    
+    public function show(Cluster $cluster)
+    {
+        $this->authorize('view', $cluster);
+        
+        return Inertia::render('Clusters/Show', [
+            'cluster' => new ClusterResource($cluster->load('domains.resources')),
+        ]);
+    }
+}
+```
+
+```jsx
+// Frontend: packages/clusters-frt/base/resources/js/Pages/Index.jsx
+import { Link, router } from '@inertiajs/react'
+import { Card, Typography, Button, TextField } from '@mui/material'
+
+export default function Index({ clusters, filters }) {
+    const handleSearch = (e) => {
+        router.get('/clusters', { search: e.target.value }, { 
+            preserveState: true,
+            replace: true 
+        })
+    }
+    
+    return (
+        <div>
+            <Typography variant="h4">Clusters</Typography>
+            
+            <TextField 
+                label="Search" 
+                defaultValue={filters.search}
+                onChange={handleSearch}
+            />
+            
+            {clusters.data.map(cluster => (
+                <Card key={cluster.id}>
+                    <Typography variant="h6">{cluster.name}</Typography>
+                    <Typography>{cluster.description}</Typography>
+                    <Link href={`/clusters/${cluster.id}`}>
+                        <Button variant="contained">View Details</Button>
+                    </Link>
+                </Card>
+            ))}
+        </div>
+    )
+}
+```
+
+#### Form Handling with Inertia.js
+
+Inertia.js provides a `useForm` hook for handling forms with automatic error binding:
+
+```jsx
+import { useForm } from '@inertiajs/react'
+import { TextField, Button, Alert } from '@mui/material'
+
+export default function Create() {
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+        description: '',
+    })
+    
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        post('/clusters')
+    }
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            {errors.general && <Alert severity="error">{errors.general}</Alert>}
+            
+            <TextField
+                label="Cluster Name"
+                value={data.name}
+                onChange={e => setData('name', e.target.value)}
+                error={!!errors.name}
+                helperText={errors.name}
+                fullWidth
+            />
+            
+            <TextField
+                label="Description"
+                value={data.description}
+                onChange={e => setData('description', e.target.value)}
+                error={!!errors.description}
+                helperText={errors.description}
+                multiline
+                rows={4}
+                fullWidth
+            />
+            
+            <Button 
+                type="submit" 
+                variant="contained" 
+                disabled={processing}
+            >
+                Create Cluster
+            </Button>
+        </form>
+    )
+}
+```
+
+**Backend Validation** returns automatically bound to form:
+
+```php
+class StoreClusterRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+        ];
+    }
+}
+
+// Controller
+public function store(StoreClusterRequest $request)
+{
+    $cluster = auth()->user()->clusters()->create($request->validated());
+    
+    return redirect()->route('clusters.show', $cluster)
+        ->with('success', 'Cluster created successfully');
+}
+```
+
+### Material UI Integration
+
+Material UI (MUI) provides React components following Material Design principles:
+
+#### MUI Setup
+
+```javascript
+// resources/js/app.jsx
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#1976d2',
+        },
+        secondary: {
+            main: '#dc004e',
+        },
+    },
+    typography: {
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    },
+})
+
+createInertiaApp({
+    // ... resolve and other config
+    setup({ el, App, props }) {
+        createRoot(el).render(
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <App {...props} />
+            </ThemeProvider>
+        )
+    },
+})
+```
+
+#### MUI Component Usage
+
+**Layout Component with MUI**:
+
+```jsx
+// packages/universo-components-frt/base/resources/js/Layouts/AppLayout.jsx
+import { AppBar, Toolbar, Typography, Drawer, List, ListItem } from '@mui/material'
+import { Link } from '@inertiajs/react'
+
+export default function AppLayout({ children, title }) {
+    return (
+        <>
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6">{title}</Typography>
+                </Toolbar>
+            </AppBar>
+            
+            <Drawer variant="permanent">
+                <List>
+                    <ListItem button component={Link} href="/clusters">
+                        Clusters
+                    </ListItem>
+                    <ListItem button component={Link} href="/metaverses">
+                        Metaverses
+                    </ListItem>
+                </List>
+            </Drawer>
+            
+            <main>
+                {children}
+            </main>
+        </>
+    )
+}
+```
+
+#### Best Practices
+
+- **Use MUI components consistently** across all frontend packages
+- **Configure theme centrally** in shared package or root app
+- **Leverage MUI's responsive utilities** for mobile-friendly UI
+- **Use MUI icons** via `@mui/icons-material`
+- **Follow Material Design guidelines** for spacing, colors, typography
+- **Integrate MUI with Inertia's Link component** for navigation
 
 ## Testing Strategy
 
@@ -986,26 +1249,289 @@ API версионируются в URL:
 
 ## Архитектура фронтенда
 
-### Интеграция Vue 3
+### Интеграция Inertia.js с React
 
-Фронтенд использует Vue 3 с Vite:
+Фронтенд использует **Inertia.js** для связи бэкенда Laravel с фронтендом React, создавая современное одностраничное приложение без построения отдельного API.
 
-```javascript
-import { createApp } from 'vue';
-import App from './App.vue';
+#### Обзор архитектуры
 
-const app = createApp(App);
-app.mount('#app');
+```
+Бэкенд Laravel                    Inertia.js                    Фронтенд React
+┌──────────────┐                  ┌─────────┐                 ┌─────────────┐
+│ Контроллер   │  ───render()───> │ Inertia │  ────props───>  │   React     │
+│              │                   │         │                 │  Страница   │
+│  Маршруты    │  <──Navigate───  │ Router  │  <──<Link>───   │             │
+└──────────────┘                  └─────────┘                 └─────────────┘
 ```
 
-### Material Design
+**Ключевые преимущества**:
+- Серверная маршрутизация (не нужен клиентский роутер)
+- Автоматическое разделение кода по страницам
+- Предварительная загрузка для мгновенной навигации
+- Общие данные через props (не нужен REST API для страниц)
+- Обработка форм с автоматической привязкой ошибок
 
-Компоненты Material Design интегрированы для единообразного UI:
+#### Разрешение страниц из пакетов
 
-- Использование принципов Material Design
-- Последовательная цветовая палитра
-- Адаптивные компоненты
-- Функции доступности
+Для модульной архитектуры с пакетами настройте резолвер страниц Inertia:
+
+```javascript
+// resources/js/app.jsx
+import { createInertiaApp } from '@inertiajs/react'
+import { createRoot } from 'react-dom/client'
+
+createInertiaApp({
+  resolve: (name) => {
+    // Поддержка как корневых страниц, так и страниц пакетов
+    const pages = import.meta.glob([
+      './Pages/**/*.jsx',
+      '../../packages/*/base/resources/js/Pages/**/*.jsx',
+    ], { eager: true })
+    
+    return pages[`./Pages/${name}.jsx`] 
+      || pages[`../../packages/${name}.jsx`]
+  },
+  setup({ el, App, props }) {
+    createRoot(el).render(<App {...props} />)
+  },
+})
+```
+
+#### Паттерн потока данных
+
+**Контроллер бэкенда** → **Рендер Inertia** → **Компонент React**
+
+```php
+// Бэкенд: packages/clusters-srv/base/src/Controllers/ClusterController.php
+namespace Universo\Clusters\Controllers;
+
+use Inertia\Inertia;
+use Universo\Clusters\Resources\ClusterResource;
+
+class ClusterController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Clusters/Index', [
+            'clusters' => ClusterResource::collection(
+                auth()->user()->clusters()
+                    ->with('domains')
+                    ->paginate(20)
+            ),
+            'filters' => request()->only(['search', 'sort']),
+        ]);
+    }
+    
+    public function show(Cluster $cluster)
+    {
+        $this->authorize('view', $cluster);
+        
+        return Inertia::render('Clusters/Show', [
+            'cluster' => new ClusterResource($cluster->load('domains.resources')),
+        ]);
+    }
+}
+```
+
+```jsx
+// Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.jsx
+import { Link, router } from '@inertiajs/react'
+import { Card, Typography, Button, TextField } from '@mui/material'
+
+export default function Index({ clusters, filters }) {
+    const handleSearch = (e) => {
+        router.get('/clusters', { search: e.target.value }, { 
+            preserveState: true,
+            replace: true 
+        })
+    }
+    
+    return (
+        <div>
+            <Typography variant="h4">Кластеры</Typography>
+            
+            <TextField 
+                label="Поиск" 
+                defaultValue={filters.search}
+                onChange={handleSearch}
+            />
+            
+            {clusters.data.map(cluster => (
+                <Card key={cluster.id}>
+                    <Typography variant="h6">{cluster.name}</Typography>
+                    <Typography>{cluster.description}</Typography>
+                    <Link href={`/clusters/${cluster.id}`}>
+                        <Button variant="contained">Подробнее</Button>
+                    </Link>
+                </Card>
+            ))}
+        </div>
+    )
+}
+```
+
+#### Обработка форм с Inertia.js
+
+Inertia.js предоставляет хук `useForm` для обработки форм с автоматической привязкой ошибок:
+
+```jsx
+import { useForm } from '@inertiajs/react'
+import { TextField, Button, Alert } from '@mui/material'
+
+export default function Create() {
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+        description: '',
+    })
+    
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        post('/clusters')
+    }
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            {errors.general && <Alert severity="error">{errors.general}</Alert>}
+            
+            <TextField
+                label="Название кластера"
+                value={data.name}
+                onChange={e => setData('name', e.target.value)}
+                error={!!errors.name}
+                helperText={errors.name}
+                fullWidth
+            />
+            
+            <TextField
+                label="Описание"
+                value={data.description}
+                onChange={e => setData('description', e.target.value)}
+                error={!!errors.description}
+                helperText={errors.description}
+                multiline
+                rows={4}
+                fullWidth
+            />
+            
+            <Button 
+                type="submit" 
+                variant="contained" 
+                disabled={processing}
+            >
+                Создать кластер
+            </Button>
+        </form>
+    )
+}
+```
+
+**Валидация бэкенда** автоматически привязывается к форме:
+
+```php
+class StoreClusterRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+        ];
+    }
+}
+
+// Контроллер
+public function store(StoreClusterRequest $request)
+{
+    $cluster = auth()->user()->clusters()->create($request->validated());
+    
+    return redirect()->route('clusters.show', $cluster)
+        ->with('success', 'Кластер успешно создан');
+}
+```
+
+### Интеграция Material UI
+
+Material UI (MUI) предоставляет компоненты React, следующие принципам Material Design:
+
+#### Настройка MUI
+
+```javascript
+// resources/js/app.jsx
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#1976d2',
+        },
+        secondary: {
+            main: '#dc004e',
+        },
+    },
+    typography: {
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    },
+})
+
+createInertiaApp({
+    // ... resolve и другие настройки
+    setup({ el, App, props }) {
+        createRoot(el).render(
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <App {...props} />
+            </ThemeProvider>
+        )
+    },
+})
+```
+
+#### Использование компонентов MUI
+
+**Компонент макета с MUI**:
+
+```jsx
+// packages/universo-components-frt/base/resources/js/Layouts/AppLayout.jsx
+import { AppBar, Toolbar, Typography, Drawer, List, ListItem } from '@mui/material'
+import { Link } from '@inertiajs/react'
+
+export default function AppLayout({ children, title }) {
+    return (
+        <>
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6">{title}</Typography>
+                </Toolbar>
+            </AppBar>
+            
+            <Drawer variant="permanent">
+                <List>
+                    <ListItem button component={Link} href="/clusters">
+                        Кластеры
+                    </ListItem>
+                    <ListItem button component={Link} href="/metaverses">
+                        Метавселенные
+                    </ListItem>
+                </List>
+            </Drawer>
+            
+            <main>
+                {children}
+            </main>
+        </>
+    )
+}
+```
+
+#### Лучшие практики
+
+- **Используйте компоненты MUI последовательно** во всех пакетах фронтенда
+- **Настройте тему централизованно** в общем пакете или корневом приложении
+- **Используйте адаптивные утилиты MUI** для мобильного UI
+- **Используйте иконки MUI** через `@mui/icons-material`
+- **Следуйте руководствам Material Design** для отступов, цветов, типографики
+- **Интегрируйте MUI с компонентом Link Inertia** для навигации
 
 ## Стратегия тестирования
 
