@@ -1,6 +1,22 @@
 # Universo Platformo Laravel - Packages
 
-This directory contains all modular packages for Universo Platformo Laravel. Each package follows a consistent structure and naming convention to enable modular development and future extraction into separate repositories.
+⭐ **CRITICAL**: This directory contains **ALL** modular packages for Universo Platformo Laravel. **ALL feature functionality MUST be implemented as packages in this directory.** Non-modular implementation is strictly prohibited.
+
+Each package follows a consistent structure and naming convention to enable modular development and future extraction into separate repositories.
+
+## Modular Architecture Mandate
+
+**ABSOLUTE REQUIREMENT**: All functionality (except common startup files, root configuration, and build scripts) MUST be implemented within packages in this directory. This is **NON-NEGOTIABLE**:
+
+- ✅ **REQUIRED**: Create all features as packages here
+- ✅ **REQUIRED**: Separate frontend and backend into distinct packages
+- ✅ **REQUIRED**: Include a `base/` directory in each package
+- ✅ **REQUIRED**: Create both README.md and README-RU.md for each package
+- ❌ **PROHIBITED**: Implementing features outside of packages
+- ❌ **PROHIBITED**: Combining frontend and backend in a single package
+- ❌ **PROHIBITED**: Creating packages without `base/` directory
+
+This structure is designed for **workspace packages** in a monorepo with the explicit goal of extracting them into **separate repositories** as the project evolves.
 
 ## Package Naming Convention
 
@@ -8,29 +24,33 @@ Packages are named according to their purpose and layer:
 
 - **Frontend packages**: `{feature-name}-frt` (e.g., `clusters-frt`, `auth-frt`)
 - **Backend packages**: `{feature-name}-srv` (e.g., `clusters-srv`, `auth-srv`)
+- **Shared packages**: `universo-{purpose}-srv` (e.g., `universo-types-srv`, `universo-utils-srv`)
 
 ## Package Structure
 
-Each package must contain a `base/` subdirectory for its core implementation:
+Each package **MUST** contain a `base/` subdirectory for its core implementation:
 
 ```
 packages/
 ├── feature-name-frt/
-│   ├── base/                     # Base frontend implementation
+│   ├── base/                     # ⭐ REQUIRED base frontend implementation
 │   │   ├── resources/            # Views, components, assets
 │   │   ├── routes/               # Frontend routes
-│   │   └── composer.json         # Package dependencies
-│   └── README.md                 # Package documentation
+│   │   └── composer.json         # Package dependencies (if needed)
+│   ├── README.md                 # ⭐ REQUIRED English documentation
+│   └── README-RU.md              # ⭐ REQUIRED Russian documentation
 └── feature-name-srv/
-    ├── base/                     # Base backend implementation
+    ├── base/                     # ⭐ REQUIRED base backend implementation
     │   ├── src/                  # PHP source code
     │   ├── routes/               # API routes
     │   ├── database/             # Migrations, seeds
+    │   ├── tests/                # Package tests
     │   └── composer.json         # Package dependencies
-    └── README.md                 # Package documentation
+    ├── README.md                 # ⭐ REQUIRED English documentation
+    └── README-RU.md              # ⭐ REQUIRED Russian documentation
 ```
 
-The `base/` subdirectory allows for future alternative implementations while maintaining backward compatibility.
+The **MANDATORY** `base/` subdirectory allows for future alternative implementations while maintaining backward compatibility.
 
 ## Package Categories
 

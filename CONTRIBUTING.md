@@ -168,12 +168,14 @@ class ClusterService
 
 ### Package Structure
 
+⭐ **MANDATORY REQUIREMENT**: All functionality MUST be implemented as packages in the `packages/` directory. Non-modular implementation is prohibited.
+
 When creating a new package:
 
 ```
 packages/
 └── feature-name-srv/
-    ├── base/
+    ├── base/                     # ⭐ REQUIRED base/ directory
     │   ├── src/
     │   │   ├── Controllers/
     │   │   ├── Models/
@@ -186,9 +188,16 @@ packages/
     │   ├── tests/
     │   │   └── Feature/
     │   └── composer.json
-    ├── README.md
-    └── README.ru.md
+    ├── README.md                 # ⭐ REQUIRED English docs
+    └── README-RU.md              # ⭐ REQUIRED Russian docs
 ```
+
+**Key Requirements**:
+- ✅ Each package MUST have a `base/` subdirectory
+- ✅ Frontend and backend MUST be separate packages (`-frt` and `-srv`)
+- ✅ Both README.md and README-RU.md MUST be created
+- ❌ DO NOT implement features outside of packages
+- ❌ DO NOT combine frontend and backend in one package
 
 ### Database Migrations
 
@@ -539,12 +548,14 @@ class ClusterService
 
 ### Структура пакета
 
+⭐ **ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ**: Весь функционал ОБЯЗАТЕЛЬНО должен быть реализован как пакеты в каталоге `packages/`. Немодульная реализация запрещена.
+
 При создании нового пакета:
 
 ```
 packages/
 └── feature-name-srv/
-    ├── base/
+    ├── base/                     # ⭐ ОБЯЗАТЕЛЬНЫЙ каталог base/
     │   ├── src/
     │   │   ├── Controllers/
     │   │   ├── Models/
@@ -557,8 +568,16 @@ packages/
     │   ├── tests/
     │   │   └── Feature/
     │   └── composer.json
-    ├── README.md
-    └── README.ru.md
+    ├── README.md                 # ⭐ ОБЯЗАТЕЛЬНАЯ документация на английском
+    └── README-RU.md              # ⭐ ОБЯЗАТЕЛЬНАЯ документация на русском
+```
+
+**Ключевые требования**:
+- ✅ Каждый пакет ОБЯЗАТЕЛЬНО должен иметь подкаталог `base/`
+- ✅ Фронтенд и бэкенд ОБЯЗАТЕЛЬНО должны быть отдельными пакетами (`-frt` и `-srv`)
+- ✅ ОБЯЗАТЕЛЬНО должны быть созданы и README.md, и README-RU.md
+- ❌ НЕ РЕАЛИЗУЙТЕ функции вне пакетов
+- ❌ НЕ ОБЪЕДИНЯЙТЕ фронтенд и бэкенд в один пакет
 ```
 
 ### Миграции базы данных
