@@ -62,11 +62,11 @@
 
 ### Documentation for User Story 1
 
-- [ ] T014 [P] [US1] Update README.md with monorepo structure documentation and package conventions
+- [ ] T014 [P] [US1] Update README.md with monorepo structure documentation, package conventions, and progressive feature roadmap (Auth → Clusters → Metaverses → Uniks → Spaces/Canvases → Node Systems including LangChain and UPDL)
 - [ ] T015 [P] [US1] Create README-RU.md with identical structure to README.md (Russian translation)
-- [ ] T016 [P] [US1] Create ARCHITECTURE.md documenting three-tier entity pattern (Clusters/Domains/Resources)
-- [ ] T017 [P] [US1] Add entity pattern variations documentation in ARCHITECTURE.md (two-tier, four-tier, five-tier)
-- [ ] T018 [P] [US1] Document React repository monitoring process in ARCHITECTURE.md
+- [ ] T016 [P] [US1] Update ARCHITECTURE.md with three-tier entity pattern documentation (Clusters/Domains/Resources) and fix frontend framework examples from React to Vue.js 3 + Vuetify 3 + Inertia.js per specification
+- [ ] T017 [P] [US1] Update ARCHITECTURE.md with entity pattern variations documentation (two-tier, four-tier, five-tier)
+- [ ] T018 [P] [US1] Update ARCHITECTURE.md to document React repository monitoring process (weekly/bi-weekly schedule) for tracking new features to implement in Laravel
 - [ ] T019 [US1] Create CONTRIBUTING.md with bilingual contribution guidelines (English primary)
 - [ ] T020 [US1] Create CONTRIBUTING-RU.md with Russian translation matching CONTRIBUTING.md structure
 
@@ -257,7 +257,7 @@
 - [ ] T125 Run npm run build to verify frontend builds successfully
 - [ ] T126 Validate quickstart.md procedures by following them step-by-step
 - [ ] T127 Create PROJECT_SETUP_SUMMARY.md documenting completed setup and next steps
-- [ ] T128 Update root README.md with current status and feature roadmap
+- [ ] T128 Verify root README.md has current status and progressive feature roadmap (completed by T014)
 
 ---
 
@@ -417,3 +417,40 @@ With multiple developers:
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
 - Focus on Laravel best practices rather than replicating React implementation patterns
+
+---
+
+## Future Feature Specifications (Progressive Implementation Roadmap)
+
+This feature (001-laravel-platform-setup) establishes the foundation. The following features should be implemented as separate feature specifications in priority order:
+
+### Phase 1: Core Features (Priority: P1)
+1. **002-authentication-system**: Complete authentication pages and user management (login, register, profile, password reset)
+2. **003-clusters-feature**: Clusters package (clusters-frt, clusters-srv) implementing three-tier pattern with Clusters → Domains → Resources
+
+### Phase 2: Extended Features (Priority: P2)
+3. **004-metaverses-feature**: Metaverses package for 3D/VR world management (metaverses-frt, metaverses-srv)
+4. **005-uniks-feature**: Uniks package for unified knowledge/item system (uniks-frt, uniks-srv)
+
+### Phase 3: Advanced Features (Priority: P3)
+5. **006-spaces-canvases**: Spaces and Canvases system for visual workflow editing
+6. **007-node-system-base**: Base node system infrastructure for visual programming
+7. **008-langchain-nodes**: LangChain integration nodes package (langchain-nodes-srv, langchain-nodes-frt)
+8. **009-updl-nodes**: UPDL (Universo Platform Description Language) nodes package (updl-nodes-srv, updl-nodes-frt)
+
+### Phase 4: Platform Features (Priority: P4)
+9. **010-publication-system**: Application publication and deployment system
+10. **011-multiplayer-colyseus**: Real-time multiplayer features using Colyseus (multiplayer-colyseus-srv, multiplayer-colyseus-frt)
+
+### Implementation Notes:
+- Each feature should follow the same specification process: spec.md → plan.md → research.md → data-model.md → contracts/ → tasks.md
+- All features MUST use the modular package structure (feature-frt / feature-srv pattern)
+- Monitor [universo-platformo-react](https://github.com/teknokomo/universo-platformo-react) for architectural patterns, but avoid copying legacy Flowise monolithic structures
+- Each feature package should be independently testable and potentially extractable to its own repository
+- Frontend packages use Vue.js 3 + Vuetify 3 + Inertia.js (NOT React)
+- Backend packages use Laravel 11+ with Repository pattern and Domain-Driven Design principles
+
+### React Repository Package Reference:
+- React packages structure: https://github.com/teknokomo/universo-platformo-react/tree/main/packages
+- Flowise components (legacy, needs optimization): https://github.com/teknokomo/universo-platformo-react/tree/main/packages/flowise-components
+- UPDL nodes reference: https://github.com/teknokomo/universo-platformo-react/tree/main/packages/updl/base
