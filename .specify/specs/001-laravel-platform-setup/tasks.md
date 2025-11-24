@@ -1,6 +1,6 @@
 # Tasks: Initial Repository Foundation and Development Environment
 
-**Input**: Design documents from `/specs/001-laravel-platform-setup/`
+**Input**: Design documents from `.specify/specs/001-laravel-platform-setup/`
 **Prerequisites**: plan.md ✓, spec.md ✓, research.md ✓, data-model.md ✓, contracts/ ✓, quickstart.md ✓
 
 **Tests**: Tests are NOT explicitly requested in this feature specification. Tasks focus on setup and infrastructure.

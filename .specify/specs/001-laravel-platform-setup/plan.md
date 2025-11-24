@@ -1,7 +1,7 @@
 # Implementation Plan: Initial Repository Foundation and Development Environment
 
 **Branch**: `001-laravel-platform-setup` | **Date**: 2025-11-17 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/001-laravel-platform-setup/spec.md`
+**Input**: Feature specification from `.specify/specs/001-laravel-platform-setup/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
@@ -153,14 +153,15 @@ packages/
 │   └── (labels configured in repository settings)
 │
 # Specification system
-└── specs/
-    └── 001-laravel-platform-setup/
-        ├── spec.md
-        ├── plan.md         # This file
-        ├── research.md     # Phase 0 output
-        ├── data-model.md   # Phase 1 output
-        ├── quickstart.md   # Phase 1 output
-        └── contracts/      # Phase 1 output
+└── .specify/
+    └── specs/
+        └── 001-laravel-platform-setup/
+            ├── spec.md
+            ├── plan.md         # This file
+            ├── research.md     # Phase 0 output
+            ├── data-model.md   # Phase 1 output
+            ├── quickstart.md   # Phase 1 output
+            └── contracts/      # Phase 1 output
 ```
 
 **Structure Decision**: This is a repository initialization feature that sets up the foundation for all future work. It is primarily backend/infrastructure focused with some frontend tooling setup. The main Laravel application resides at the root level (standard Laravel structure), while the monorepo packages/ directory will host modular feature packages. Initial packages (universo-types-srv, universo-utils-srv) are shared infrastructure without -frt/-srv suffixes per constitution. Future feature packages like clusters will follow the -frt/-srv separation pattern.

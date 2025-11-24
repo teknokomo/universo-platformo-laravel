@@ -110,7 +110,7 @@
 ### ✅ Compliance with Specification
 
 The implementation follows the specification document located at:
-`specs/001-laravel-platform-setup/spec.md`
+`.specify/specs/001-laravel-platform-setup/spec.md`
 
 Key requirements met:
 
