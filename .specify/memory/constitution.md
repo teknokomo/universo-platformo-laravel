@@ -57,6 +57,49 @@ Deep Check Report: .specify/memory/constitution-deep-check-report.md
 
 # Universo Platformo Laravel Constitution
 
+## Project Overview
+
+**Universo Platformo Laravel** is the PHP/Laravel implementation of Universo Platformo, a comprehensive platform for creating multi-user 3D/AR/VR experiences, metaverses, and interactive digital worlds. This project serves as the foundation for implementing **Universo Kiberplano** - a global planning and implementation system that unifies plans, tasks, and resources while controlling robots.
+
+### Vision and Mission
+
+Create a global teknokomization system that will help save humanity from final enslavement and total destruction. The platform provides:
+- Multi-user interactive 3D/AR/VR experiences
+- Metaverse creation and management capabilities
+- Global planning and coordination framework
+- Resource allocation optimization
+- Robotic system automation and control
+- Unified digital environment for worldwide collaboration
+
+### Implementation Goals
+
+1. **Modular Architecture**: All functionality organized as independent packages for scalability and future extraction into separate repositories
+2. **Bilingual Support**: Complete documentation in English (primary) and Russian (exact translation)
+3. **Database Integration**: Supabase (PostgreSQL) as primary database with abstraction for multi-provider support
+4. **Modern Frontend**: React + Inertia.js + Material UI for rich, interactive user experiences
+5. **Reference Alignment**: Maintain feature parity with universo-platformo-react while improving implementation quality
+6. **Clean Implementation**: Avoid legacy patterns and technical debt from reference implementations
+
+### Core Constraints
+
+- **Mandatory Package-Based Development**: ALL feature functionality MUST be implemented as packages in `packages/` directory
+- **Frontend/Backend Separation**: Features requiring both frontend and backend MUST use separate packages (`-frt` and `-srv`)
+- **Base Directory Requirement**: Each package MUST contain a `base/` subdirectory for core implementation
+- **Documentation Standard**: All documentation MUST be bilingual with identical structure in English and Russian
+- **Technology Stack**: Laravel 11.x + PHP 8.2+, React + Inertia.js, Material UI, Supabase
+- **No Legacy Replication**: DO NOT replicate incomplete implementations (particularly Flowise components from React version)
+
+### Current Development Phase
+
+**Status**: Initial Setup and Foundation Development
+
+**Primary Focus**:
+- Repository structure establishment and organization
+- Core package architecture implementation
+- Database and authentication configuration
+- Documentation framework and standardization
+- Development workflow setup and automation
+
 ## Core Principles
 
 ### I. Monorepo Package Architecture
