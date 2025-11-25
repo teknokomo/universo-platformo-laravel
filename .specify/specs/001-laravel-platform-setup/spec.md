@@ -145,7 +145,7 @@ A frontend developer needs to build user interfaces. They can access a configure
 - **FR-014**: Repository MUST NOT include AI agent configuration files in .github/agents/ (user creates these separately)
 - **FR-015**: All README files and primary documentation MUST be available in both English and Russian with identical content structure
 - **FR-016**: Repository MUST include package.json for frontend build tools and asset management even though backend is PHP
-- **FR-017**: Frontend packages MUST be configured to work with a UI component library following Material Design principles
+- **FR-017**: Frontend packages MUST be configured to use Vuetify 3.x (Material Design 3 component library for Vue.js 3) for consistent UI design language
 - **FR-018**: Repository structure MUST support three-tier entity patterns (e.g., Clusters/Domains/Resources) commonly used across features with clear examples in architecture documentation
 - **FR-019**: Documentation MUST reference the React implementation at https://github.com/teknokomo/universo-platformo-react as a conceptual guide while noting it's partially implemented with legacy code
 - **FR-020**: Documentation MUST include process for monitoring the React repository (weekly or bi-weekly) for new features and implementing them using Laravel stack

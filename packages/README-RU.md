@@ -138,7 +138,7 @@ packages/
 
 4. **Создайте двуязычную документацию**
    - `packages/myfeature-frt/README.md` (английский)
-   - `packages/myfeature-frt/README.ru.md` (русский)
+   - `packages/myfeature-frt/README-RU.md` (русский)
 
 ## Руководство по разработке пакетов
 
@@ -149,7 +149,7 @@ packages/
 
 ### Интеграция бэкенда и фронтенда с Inertia.js
 
-Laravel + Inertia.js устраняет необходимость в традиционном слое REST API между пакетами фронтенда и бэкенда. Вместо этого данные передаются напрямую из контроллеров Laravel в компоненты React.
+Laravel + Inertia.js устраняет необходимость в традиционном слое REST API между пакетами фронтенда и бэкенда. Вместо этого данные передаются напрямую из контроллеров Laravel в компоненты Vue.js.
 
 #### Паттерн интеграции
 
@@ -160,8 +160,8 @@ Laravel + Inertia.js устраняет необходимость в тради
 - Policies для авторизации
 
 **Пакет фронтенда** (`-frt`) предоставляет:
-- Компоненты страниц React
-- Переиспользуемые UI компоненты (на основе MUI)
+- Компоненты страниц Vue.js
+- Переиспользуемые UI компоненты (на основе Vuetify)
 - Утилиты на стороне клиента
 
 **Пример интеграции**:
@@ -195,22 +195,22 @@ class ClusterController extends Controller
 }
 ```
 
-```jsx
-// Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.jsx
-import { Card, Typography } from '@mui/material'
+```vue
+<!-- Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
+<template>
+  <div>
+    <h4 class="text-h4 mb-4">Кластеры</h4>
+    <v-card v-for="cluster in clusters.data" :key="cluster.id">
+      <v-card-title>{{ cluster.name }}</v-card-title>
+    </v-card>
+  </div>
+</template>
 
-export default function Index({ clusters }) {
-    return (
-        <div>
-            <Typography variant="h4">Кластеры</Typography>
-            {clusters.data.map(cluster => (
-                <Card key={cluster.id}>
-                    <Typography>{cluster.name}</Typography>
-                </Card>
-            ))}
-        </div>
-    )
-}
+<script setup>
+defineProps({
+  clusters: Object
+})
+</script>
 ```
 
 #### Общие данные между пакетами
@@ -218,7 +218,7 @@ export default function Index({ clusters }) {
 Для данных, используемых в нескольких пакетах, используйте общие пакеты:
 - `universo-types-srv` - PHP интерфейсы и DTO
 - `universo-utils-srv` - Вспомогательные функции
-- В будущем: `universo-components-frt` - Общие компоненты React/MUI
+- В будущем: `universo-components-frt` - Общие компоненты Vue.js/Vuetify
 
 #### API endpoints для внешнего доступа
 

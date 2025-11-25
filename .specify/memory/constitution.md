@@ -1,12 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.3.0 → 1.3.1
-Updated: 2025-11-17
+Version Change: 1.3.1 → 1.4.0
+Updated: 2025-11-25
 
-PATCH VERSION UPDATE - Strengthened modular architecture requirements
+MINOR VERSION UPDATE - Frontend framework and authentication alignment with research decisions
 
-Changes in 1.3.1:
+Changes in 1.4.0:
+- UPDATED: Principle III - Changed authentication from "Passport.js with Supabase connector" to "Laravel Sanctum with Supabase JWT validation middleware" (aligns with research.md decision)
+- UPDATED: Principle IV - Changed frontend from "React + Material UI" to "Vue.js 3 + Vuetify 3.x (Material Design 3)" (aligns with research.md and plan.md decisions)
+- UPDATED: Technology Stack Requirements - Aligned all technologies with research decisions
+- UPDATED: Implementation Goals and Core Constraints - Reflect Vue.js + Vuetify stack
+- FIXED: Title of Principle IV changed from "Laravel Full-Stack with React Frontend" to "Laravel Full-Stack with Vue.js Frontend"
+
+Previous Changes in 1.3.1:
 - ENHANCED: Principle I - Added explicit prohibition of non-modular implementation
 - ENHANCED: Principle I - Added critical requirement section emphasizing MANDATORY modular structure
 - ENHANCED: Principle I - Added detailed package separation requirements
@@ -42,7 +49,8 @@ Changes in 1.1.0:
 
 Principles Updated:
 - I. Monorepo Package Architecture (FIXED 1.1.0, ENHANCED 1.3.0 - shared packages, ENHANCED 1.3.1 - mandatory modular implementation)
-- IV. Laravel Full-Stack with React Frontend (ENHANCED 1.3.0 - API standards, security)
+- III. Database-First with Supabase (UPDATED 1.4.0 - Laravel Sanctum authentication)
+- IV. Laravel Full-Stack with Vue.js Frontend (RENAMED & UPDATED 1.4.0 - Vue.js + Vuetify; ENHANCED 1.3.0 - API standards, security)
 - V. Clean Architecture & Incremental Development (EXPANDED 1.1.0, ENHANCED 1.2.0, ENHANCED 1.3.0 - database & security patterns)
 - VII. Reference Implementation Alignment (NEW 1.1.0, ENHANCED 1.2.0)
 - VIII. Build and Deployment Standards (NEW 1.3.0)
@@ -76,7 +84,7 @@ Create a global teknokomization system that will help save humanity from final e
 1. **Modular Architecture**: All functionality organized as independent packages for scalability and future extraction into separate repositories
 2. **Bilingual Support**: Complete documentation in English (primary) and Russian (exact translation)
 3. **Database Integration**: Supabase (PostgreSQL) as primary database with abstraction for multi-provider support
-4. **Modern Frontend**: React + Inertia.js + Material UI for rich, interactive user experiences
+4. **Modern Frontend**: Vue.js 3 + Inertia.js + Vuetify 3.x (Material Design 3) for rich, interactive user experiences
 5. **Reference Alignment**: Maintain feature parity with universo-platformo-react while improving implementation quality
 6. **Clean Implementation**: Avoid legacy patterns and technical debt from reference implementations
 
@@ -86,7 +94,7 @@ Create a global teknokomization system that will help save humanity from final e
 - **Frontend/Backend Separation**: Features requiring both frontend and backend MUST use separate packages (`-frt` and `-srv`)
 - **Base Directory Requirement**: Each package MUST contain a `base/` subdirectory for core implementation
 - **Documentation Standard**: All documentation MUST be bilingual with identical structure in English and Russian
-- **Technology Stack**: Laravel 11.x + PHP 8.2+, React + Inertia.js, Material UI, Supabase
+- **Technology Stack**: Laravel 11.x + PHP 8.2+, Vue.js 3 + Inertia.js, Vuetify 3.x, Laravel Sanctum, Supabase
 - **No Legacy Replication**: DO NOT replicate incomplete implementations (particularly Flowise components from React version)
 
 ### Current Development Phase
@@ -130,19 +138,19 @@ MAY include additional shared packages as needed (e.g., universo-api-client for 
 
 ### III. Database-First with Supabase
 
-**MUST** use Supabase as the primary database solution. Authentication MUST use Passport.js with Supabase connector. Database schema design MUST be extensible to support other DBMS in the future, avoiding Supabase-specific patterns that prevent migration.
+**MUST** use Supabase as the primary database solution. Authentication MUST use Laravel Sanctum with custom Supabase JWT validation middleware for API token authentication. Database schema design MUST be extensible to support other DBMS in the future, avoiding Supabase-specific patterns that prevent migration.
 
-**Rationale**: Supabase provides rapid development capabilities while maintaining PostgreSQL compatibility. Extensibility design prevents vendor lock-in.
+**Rationale**: Supabase provides rapid development capabilities while maintaining PostgreSQL compatibility. Laravel Sanctum is the recommended authentication solution for SPAs using Inertia.js. Extensibility design prevents vendor lock-in.
 
-### IV. Laravel Full-Stack with React Frontend
+### IV. Laravel Full-Stack with Vue.js Frontend
 
-**MUST** follow Laravel framework conventions and PHP best practices for backend implementation. This includes: Eloquent ORM for database operations, Laravel's service container for dependency injection, form request validation, resource controllers, and API resources. Frontend **MUST** use Laravel with Inertia.js to integrate React components. User interface **MUST** use Material UI (MUI library) for consistent design language. This creates a modern single-page application experience while maintaining Laravel's server-side routing and controllers.
+**MUST** follow Laravel framework conventions and PHP best practices for backend implementation. This includes: Eloquent ORM for database operations, Laravel's service container for dependency injection, form request validation, resource controllers, and API resources. Frontend **MUST** use Laravel with Inertia.js to integrate Vue.js 3 components. User interface **MUST** use Vuetify 3.x (Material Design 3 component library) for consistent design language. This creates a modern single-page application experience while maintaining Laravel's server-side routing and controllers.
 
 **API Design Standards**: All API endpoints MUST follow RESTful conventions with versioned URLs (e.g., /api/v1/resources). Responses MUST use standardized JSON format with success/error structure and appropriate HTTP status codes. Rate limiting MUST be implemented on all public endpoints using Laravel's throttle middleware (Redis storage recommended for production, in-memory acceptable for development). API resources MUST transform Eloquent models before returning to clients, controlling field exposure and adding computed properties.
 
 **Authorization & Security**: Multi-tenant features MUST implement application-level authorization guards to enforce data isolation between tenants. Guards MUST prevent IDOR (Insecure Direct Object Reference) attacks by validating ownership/permissions before allowing access to resources. This can be implemented using Laravel middleware, policy classes, or Eloquent global scopes. All database queries MUST use Eloquent ORM's parameterized queries to prevent SQL injection attacks.
 
-**Rationale**: Leverage Laravel's mature ecosystem for backend while using React + MUI for rich, interactive user interfaces. Inertia.js bridges these technologies without the complexity of a separate API layer. Explicit API standards prevent inconsistencies. Application-level authorization provides defense-in-depth security beyond database-level Row Level Security.
+**Rationale**: Leverage Laravel's mature ecosystem for backend while using Vue.js 3 + Vuetify 3.x for rich, interactive user interfaces following Material Design 3 principles. Inertia.js bridges these technologies without the complexity of a separate API layer. Vue.js is Laravel's recommended frontend framework with excellent Inertia.js integration. Explicit API standards prevent inconsistencies. Application-level authorization provides defense-in-depth security beyond database-level Row Level Security.
 
 ### V. Clean Architecture & Incremental Development
 
@@ -230,14 +238,14 @@ Development **MUST**:
 
 **Backend Framework**: Laravel (latest stable) with PHP 8.2+  
 **Backend Package Manager**: Composer for PHP dependencies and workspace management  
-**Frontend Framework**: React with Laravel Inertia.js for SPA integration  
-**Frontend Library**: Material UI (MUI) for component design  
+**Frontend Framework**: Vue.js 3.x with Laravel Inertia.js for SPA integration  
+**Frontend Library**: Vuetify 3.x (Material Design 3) for component design  
 **Frontend Build Tools**: Vite (Laravel default) for asset compilation  
 **Frontend Package Manager**: NPM or PNPM for JavaScript dependencies (separate from PHP)  
 **Database**: Supabase (PostgreSQL-based) with extensibility for other DBMS  
-**Authentication**: Passport.js with Supabase connector (or Laravel Sanctum + Supabase)  
+**Authentication**: Laravel Sanctum with custom Supabase JWT validation middleware  
 **Testing Backend**: PHPUnit or Pest for PHP/Laravel testing  
-**Testing Frontend**: Jest and React Testing Library for React component testing  
+**Testing Frontend**: Vitest for Vue.js component testing  
 **Version Control**: Git with feature branch workflow
 
 ## Development Workflow
@@ -280,4 +288,4 @@ This constitution supersedes all other development practices and patterns. All P
 
 **Compliance Review**: Constitution compliance is verified during specification review, implementation review, and before merging to main branch.
 
-**Version**: 1.3.1 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-17
+**Version**: 1.4.0 | **Ratified**: 2025-11-16 | **Last Amended**: 2025-11-25
