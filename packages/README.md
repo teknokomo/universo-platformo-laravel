@@ -138,7 +138,7 @@ The **MANDATORY** `base/` subdirectory allows for future alternative implementat
 
 4. **Create bilingual documentation**
    - `packages/myfeature-frt/README.md` (English)
-   - `packages/myfeature-frt/README.ru.md` (Russian)
+   - `packages/myfeature-frt/README-RU.md` (Russian)
 
 ## Package Development Guidelines
 
@@ -149,7 +149,7 @@ The **MANDATORY** `base/` subdirectory allows for future alternative implementat
 
 ### Backend-Frontend Integration with Inertia.js
 
-Laravel + Inertia.js eliminates the need for a traditional REST API layer between frontend and backend packages. Instead, data flows directly from Laravel controllers to React components.
+Laravel + Inertia.js eliminates the need for a traditional REST API layer between frontend and backend packages. Instead, data flows directly from Laravel controllers to Vue.js components.
 
 #### Integration Pattern
 
@@ -160,8 +160,8 @@ Laravel + Inertia.js eliminates the need for a traditional REST API layer betwee
 - Policies for authorization
 
 **Frontend Package** (`-frt`) provides:
-- React page components
-- Reusable UI components (MUI-based)
+- Vue.js page components
+- Reusable UI components (Vuetify-based)
 - Client-side utilities
 
 **Example Integration**:
@@ -195,22 +195,22 @@ class ClusterController extends Controller
 }
 ```
 
-```jsx
-// Frontend: packages/clusters-frt/base/resources/js/Pages/Index.jsx
-import { Card, Typography } from '@mui/material'
+```vue
+<!-- Frontend: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
+<template>
+  <div>
+    <v-typography variant="h4">Clusters</v-typography>
+    <v-card v-for="cluster in clusters.data" :key="cluster.id">
+      <v-card-title>{{ cluster.name }}</v-card-title>
+    </v-card>
+  </div>
+</template>
 
-export default function Index({ clusters }) {
-    return (
-        <div>
-            <Typography variant="h4">Clusters</Typography>
-            {clusters.data.map(cluster => (
-                <Card key={cluster.id}>
-                    <Typography>{cluster.name}</Typography>
-                </Card>
-            ))}
-        </div>
-    )
-}
+<script setup>
+defineProps({
+  clusters: Object
+})
+</script>
 ```
 
 #### Shared Data Between Packages
@@ -218,7 +218,7 @@ export default function Index({ clusters }) {
 For data shared across packages, use shared packages:
 - `universo-types-srv` - PHP interfaces and DTOs
 - `universo-utils-srv` - Helper functions
-- Future: `universo-components-frt` - Shared React/MUI components
+- Future: `universo-components-frt` - Shared Vue.js/Vuetify components
 
 #### API Endpoints for External Access
 
