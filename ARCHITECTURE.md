@@ -483,17 +483,17 @@ APIs are versioned in the URL:
 
 ## Frontend Architecture
 
-### Inertia.js with React Integration
+### Inertia.js with Vue.js 3 Integration
 
-The frontend uses **Inertia.js** to bridge Laravel backend with React frontend, creating a modern single-page application experience without building a separate API.
+The frontend uses **Inertia.js** to bridge Laravel backend with Vue.js 3 frontend, creating a modern single-page application experience without building a separate API.
 
 #### Architecture Overview
 
 ```
-Laravel Backend                    Inertia.js                    React Frontend
+Laravel Backend                    Inertia.js                    Vue.js 3 Frontend
 ┌──────────────┐                  ┌─────────┐                 ┌─────────────┐
-│  Controller  │  ───render()───> │ Inertia │  ────props───>  │ React Page  │
-│              │                   │         │                 │ Component   │
+│  Controller  │  ───render()───> │ Inertia │  ────props───>  │  Vue Page   │
+│              │                   │         │                 │  Component  │
 │   Routes     │  <──Navigate───  │ Router  │  <──<Link>───   │             │
 └──────────────┘                  └─────────┘                 └─────────────┘
 ```
@@ -510,30 +510,41 @@ Laravel Backend                    Inertia.js                    React Frontend
 For modular architecture with packages, customize Inertia's page resolver:
 
 ```javascript
-// resources/js/app.jsx
-import { createInertiaApp } from '@inertiajs/react'
-import { createRoot } from 'react-dom/client'
+// resources/js/app.js
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
+
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
+const vuetify = createVuetify({ components, directives })
 
 createInertiaApp({
   resolve: (name) => {
     // Support both root pages and package pages
     const pages = import.meta.glob([
-      './Pages/**/*.jsx',
-      '../../packages/*/base/resources/js/Pages/**/*.jsx',
+      './Pages/**/*.vue',
+      '../../packages/*/base/resources/js/Pages/**/*.vue',
     ], { eager: true })
     
-    return pages[`./Pages/${name}.jsx`] 
-      || pages[`../../packages/${name}.jsx`]
+    return pages[`./Pages/${name}.vue`] 
+      || pages[`../../packages/${name}.vue`]
   },
-  setup({ el, App, props }) {
-    createRoot(el).render(<App {...props} />)
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(vuetify)
+      .mount(el)
   },
 })
 ```
 
 #### Data Flow Pattern
 
-**Backend Controller** → **Inertia Render** → **React Component**
+**Backend Controller** → **Inertia Render** → **Vue Component**
 
 ```php
 // Backend: packages/clusters-srv/base/src/Controllers/ClusterController.php
@@ -567,96 +578,99 @@ class ClusterController extends Controller
 }
 ```
 
-```jsx
-// Frontend: packages/clusters-frt/base/resources/js/Pages/Index.jsx
-import { Link, router } from '@inertiajs/react'
-import { Card, Typography, Button, TextField } from '@mui/material'
-
-export default function Index({ clusters, filters }) {
-    const handleSearch = (e) => {
-        router.get('/clusters', { search: e.target.value }, { 
-            preserveState: true,
-            replace: true 
-        })
-    }
+```vue
+<!-- Frontend: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
+<template>
+  <div>
+    <v-typography variant="h4">Clusters</v-typography>
     
-    return (
-        <div>
-            <Typography variant="h4">Clusters</Typography>
-            
-            <TextField 
-                label="Search" 
-                defaultValue={filters.search}
-                onChange={handleSearch}
-            />
-            
-            {clusters.data.map(cluster => (
-                <Card key={cluster.id}>
-                    <Typography variant="h6">{cluster.name}</Typography>
-                    <Typography>{cluster.description}</Typography>
-                    <Link href={`/clusters/${cluster.id}`}>
-                        <Button variant="contained">View Details</Button>
-                    </Link>
-                </Card>
-            ))}
-        </div>
-    )
+    <v-text-field 
+      label="Search" 
+      v-model="searchQuery"
+      @input="handleSearch"
+    />
+    
+    <v-card v-for="cluster in clusters.data" :key="cluster.id" class="mb-4">
+      <v-card-title>{{ cluster.name }}</v-card-title>
+      <v-card-text>{{ cluster.description }}</v-card-text>
+      <v-card-actions>
+        <Link :href="`/clusters/${cluster.id}`">
+          <v-btn color="primary">View Details</v-btn>
+        </Link>
+      </v-card-actions>
+    </v-card>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
+
+const props = defineProps({
+  clusters: Object,
+  filters: Object
+})
+
+const searchQuery = ref(props.filters?.search || '')
+
+const handleSearch = () => {
+  router.get('/clusters', { search: searchQuery.value }, { 
+    preserveState: true,
+    replace: true 
+  })
 }
+</script>
 ```
 
 #### Form Handling with Inertia.js
 
-Inertia.js provides a `useForm` hook for handling forms with automatic error binding:
+Inertia.js provides a `useForm` composable for handling forms with automatic error binding:
 
-```jsx
-import { useForm } from '@inertiajs/react'
-import { TextField, Button, Alert } from '@mui/material'
+```vue
+<!-- Frontend: packages/clusters-frt/base/resources/js/Pages/Create.vue -->
+<template>
+  <form @submit.prevent="submit">
+    <v-alert v-if="form.errors.general" type="error" class="mb-4">
+      {{ form.errors.general }}
+    </v-alert>
+    
+    <v-text-field
+      label="Cluster Name"
+      v-model="form.name"
+      :error="!!form.errors.name"
+      :error-messages="form.errors.name"
+    />
+    
+    <v-textarea
+      label="Description"
+      v-model="form.description"
+      :error="!!form.errors.description"
+      :error-messages="form.errors.description"
+      rows="4"
+    />
+    
+    <v-btn 
+      type="submit" 
+      color="primary"
+      :loading="form.processing"
+    >
+      Create Cluster
+    </v-btn>
+  </form>
+</template>
 
-export default function Create() {
-    const { data, setData, post, processing, errors } = useForm({
-        name: '',
-        description: '',
-    })
-    
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        post('/clusters')
-    }
-    
-    return (
-        <form onSubmit={handleSubmit}>
-            {errors.general && <Alert severity="error">{errors.general}</Alert>}
-            
-            <TextField
-                label="Cluster Name"
-                value={data.name}
-                onChange={e => setData('name', e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name}
-                fullWidth
-            />
-            
-            <TextField
-                label="Description"
-                value={data.description}
-                onChange={e => setData('description', e.target.value)}
-                error={!!errors.description}
-                helperText={errors.description}
-                multiline
-                rows={4}
-                fullWidth
-            />
-            
-            <Button 
-                type="submit" 
-                variant="contained" 
-                disabled={processing}
-            >
-                Create Cluster
-            </Button>
-        </form>
-    )
+<script setup>
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  description: '',
+})
+
+const submit = () => {
+  form.post('/clusters')
 }
+</script>
 ```
 
 **Backend Validation** returns automatically bound to form:
@@ -683,89 +697,104 @@ public function store(StoreClusterRequest $request)
 }
 ```
 
-### Material UI Integration
+### Vuetify 3 Integration
 
-Material UI (MUI) provides React components following Material Design principles:
+Vuetify 3 provides Vue.js components following Material Design 3 principles:
 
-#### MUI Setup
+#### Vuetify Setup
 
 ```javascript
-// resources/js/app.jsx
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
+// resources/js/app.js
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#1976d2',
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+import '@mdi/font/css/materialdesignicons.css'
+
+const vuetify = createVuetify({
+  components,
+  directives,
+  theme: {
+    defaultTheme: 'light',
+    themes: {
+      light: {
+        colors: {
+          primary: '#1976d2',
+          secondary: '#dc004e',
         },
-        secondary: {
-            main: '#dc004e',
-        },
+      },
     },
-    typography: {
-        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    },
+  },
 })
 
 createInertiaApp({
-    // ... resolve and other config
-    setup({ el, App, props }) {
-        createRoot(el).render(
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <App {...props} />
-            </ThemeProvider>
-        )
-    },
+  // ... resolve config
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(vuetify)
+      .mount(el)
+  },
 })
 ```
 
-#### MUI Component Usage
+#### Vuetify Component Usage
 
-**Layout Component with MUI**:
+**Layout Component with Vuetify**:
 
-```jsx
-// packages/universo-components-frt/base/resources/js/Layouts/AppLayout.jsx
-import { AppBar, Toolbar, Typography, Drawer, List, ListItem } from '@mui/material'
-import { Link } from '@inertiajs/react'
+```vue
+<!-- packages/universo-components-frt/base/resources/js/Layouts/AppLayout.vue -->
+<template>
+  <v-app>
+    <v-app-bar color="primary">
+      <v-toolbar-title>{{ title }}</v-toolbar-title>
+    </v-app-bar>
+    
+    <v-navigation-drawer permanent>
+      <v-list>
+        <v-list-item :href="'/clusters'" title="Clusters">
+          <template v-slot:prepend>
+            <v-icon>mdi-folder-multiple</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item :href="'/metaverses'" title="Metaverses">
+          <template v-slot:prepend>
+            <v-icon>mdi-earth</v-icon>
+          </template>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+    
+    <v-main>
+      <v-container>
+        <slot />
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
 
-export default function AppLayout({ children, title }) {
-    return (
-        <>
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6">{title}</Typography>
-                </Toolbar>
-            </AppBar>
-            
-            <Drawer variant="permanent">
-                <List>
-                    <ListItem button component={Link} href="/clusters">
-                        Clusters
-                    </ListItem>
-                    <ListItem button component={Link} href="/metaverses">
-                        Metaverses
-                    </ListItem>
-                </List>
-            </Drawer>
-            
-            <main>
-                {children}
-            </main>
-        </>
-    )
-}
+<script setup>
+defineProps({
+  title: {
+    type: String,
+    default: 'Universo Platformo'
+  }
+})
+</script>
 ```
 
 #### Best Practices
 
-- **Use MUI components consistently** across all frontend packages
+- **Use Vuetify components consistently** across all frontend packages
 - **Configure theme centrally** in shared package or root app
-- **Leverage MUI's responsive utilities** for mobile-friendly UI
-- **Use MUI icons** via `@mui/icons-material`
-- **Follow Material Design guidelines** for spacing, colors, typography
-- **Integrate MUI with Inertia's Link component** for navigation
+- **Leverage Vuetify's responsive utilities** for mobile-friendly UI
+- **Use Material Design Icons** via `@mdi/font`
+- **Follow Material Design 3 guidelines** for spacing, colors, typography
+- **Integrate Vuetify with Inertia's Link component** for navigation
 
 ## Testing Strategy
 
@@ -1249,16 +1278,16 @@ API версионируются в URL:
 
 ## Архитектура фронтенда
 
-### Интеграция Inertia.js с React
+### Интеграция Inertia.js с Vue.js 3
 
-Фронтенд использует **Inertia.js** для связи бэкенда Laravel с фронтендом React, создавая современное одностраничное приложение без построения отдельного API.
+Фронтенд использует **Inertia.js** для связи бэкенда Laravel с фронтендом Vue.js 3, создавая современное одностраничное приложение без построения отдельного API.
 
 #### Обзор архитектуры
 
 ```
-Бэкенд Laravel                    Inertia.js                    Фронтенд React
+Бэкенд Laravel                    Inertia.js                    Фронтенд Vue.js 3
 ┌──────────────┐                  ┌─────────┐                 ┌─────────────┐
-│ Контроллер   │  ───render()───> │ Inertia │  ────props───>  │   React     │
+│ Контроллер   │  ───render()───> │ Inertia │  ────props───>  │   Vue.js    │
 │              │                   │         │                 │  Страница   │
 │  Маршруты    │  <──Navigate───  │ Router  │  <──<Link>───   │             │
 └──────────────┘                  └─────────┘                 └─────────────┘
@@ -1276,30 +1305,41 @@ API версионируются в URL:
 Для модульной архитектуры с пакетами настройте резолвер страниц Inertia:
 
 ```javascript
-// resources/js/app.jsx
-import { createInertiaApp } from '@inertiajs/react'
-import { createRoot } from 'react-dom/client'
+// resources/js/app.js
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
+
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
+const vuetify = createVuetify({ components, directives })
 
 createInertiaApp({
   resolve: (name) => {
     // Поддержка как корневых страниц, так и страниц пакетов
     const pages = import.meta.glob([
-      './Pages/**/*.jsx',
-      '../../packages/*/base/resources/js/Pages/**/*.jsx',
+      './Pages/**/*.vue',
+      '../../packages/*/base/resources/js/Pages/**/*.vue',
     ], { eager: true })
     
-    return pages[`./Pages/${name}.jsx`] 
-      || pages[`../../packages/${name}.jsx`]
+    return pages[`./Pages/${name}.vue`] 
+      || pages[`../../packages/${name}.vue`]
   },
-  setup({ el, App, props }) {
-    createRoot(el).render(<App {...props} />)
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(vuetify)
+      .mount(el)
   },
 })
 ```
 
 #### Паттерн потока данных
 
-**Контроллер бэкенда** → **Рендер Inertia** → **Компонент React**
+**Контроллер бэкенда** → **Рендер Inertia** → **Компонент Vue**
 
 ```php
 // Бэкенд: packages/clusters-srv/base/src/Controllers/ClusterController.php
@@ -1333,96 +1373,99 @@ class ClusterController extends Controller
 }
 ```
 
-```jsx
-// Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.jsx
-import { Link, router } from '@inertiajs/react'
-import { Card, Typography, Button, TextField } from '@mui/material'
-
-export default function Index({ clusters, filters }) {
-    const handleSearch = (e) => {
-        router.get('/clusters', { search: e.target.value }, { 
-            preserveState: true,
-            replace: true 
-        })
-    }
+```vue
+<!-- Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
+<template>
+  <div>
+    <v-typography variant="h4">Кластеры</v-typography>
     
-    return (
-        <div>
-            <Typography variant="h4">Кластеры</Typography>
-            
-            <TextField 
-                label="Поиск" 
-                defaultValue={filters.search}
-                onChange={handleSearch}
-            />
-            
-            {clusters.data.map(cluster => (
-                <Card key={cluster.id}>
-                    <Typography variant="h6">{cluster.name}</Typography>
-                    <Typography>{cluster.description}</Typography>
-                    <Link href={`/clusters/${cluster.id}`}>
-                        <Button variant="contained">Подробнее</Button>
-                    </Link>
-                </Card>
-            ))}
-        </div>
-    )
+    <v-text-field 
+      label="Поиск" 
+      v-model="searchQuery"
+      @input="handleSearch"
+    />
+    
+    <v-card v-for="cluster in clusters.data" :key="cluster.id" class="mb-4">
+      <v-card-title>{{ cluster.name }}</v-card-title>
+      <v-card-text>{{ cluster.description }}</v-card-text>
+      <v-card-actions>
+        <Link :href="`/clusters/${cluster.id}`">
+          <v-btn color="primary">Подробнее</v-btn>
+        </Link>
+      </v-card-actions>
+    </v-card>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
+
+const props = defineProps({
+  clusters: Object,
+  filters: Object
+})
+
+const searchQuery = ref(props.filters?.search || '')
+
+const handleSearch = () => {
+  router.get('/clusters', { search: searchQuery.value }, { 
+    preserveState: true,
+    replace: true 
+  })
 }
+</script>
 ```
 
 #### Обработка форм с Inertia.js
 
-Inertia.js предоставляет хук `useForm` для обработки форм с автоматической привязкой ошибок:
+Inertia.js предоставляет composable `useForm` для обработки форм с автоматической привязкой ошибок:
 
-```jsx
-import { useForm } from '@inertiajs/react'
-import { TextField, Button, Alert } from '@mui/material'
+```vue
+<!-- Фронтенд: packages/clusters-frt/base/resources/js/Pages/Create.vue -->
+<template>
+  <form @submit.prevent="submit">
+    <v-alert v-if="form.errors.general" type="error" class="mb-4">
+      {{ form.errors.general }}
+    </v-alert>
+    
+    <v-text-field
+      label="Название кластера"
+      v-model="form.name"
+      :error="!!form.errors.name"
+      :error-messages="form.errors.name"
+    />
+    
+    <v-textarea
+      label="Описание"
+      v-model="form.description"
+      :error="!!form.errors.description"
+      :error-messages="form.errors.description"
+      rows="4"
+    />
+    
+    <v-btn 
+      type="submit" 
+      color="primary"
+      :loading="form.processing"
+    >
+      Создать кластер
+    </v-btn>
+  </form>
+</template>
 
-export default function Create() {
-    const { data, setData, post, processing, errors } = useForm({
-        name: '',
-        description: '',
-    })
-    
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        post('/clusters')
-    }
-    
-    return (
-        <form onSubmit={handleSubmit}>
-            {errors.general && <Alert severity="error">{errors.general}</Alert>}
-            
-            <TextField
-                label="Название кластера"
-                value={data.name}
-                onChange={e => setData('name', e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name}
-                fullWidth
-            />
-            
-            <TextField
-                label="Описание"
-                value={data.description}
-                onChange={e => setData('description', e.target.value)}
-                error={!!errors.description}
-                helperText={errors.description}
-                multiline
-                rows={4}
-                fullWidth
-            />
-            
-            <Button 
-                type="submit" 
-                variant="contained" 
-                disabled={processing}
-            >
-                Создать кластер
-            </Button>
-        </form>
-    )
+<script setup>
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  description: '',
+})
+
+const submit = () => {
+  form.post('/clusters')
 }
+</script>
 ```
 
 **Валидация бэкенда** автоматически привязывается к форме:
@@ -1449,89 +1492,104 @@ public function store(StoreClusterRequest $request)
 }
 ```
 
-### Интеграция Material UI
+### Интеграция Vuetify 3
 
-Material UI (MUI) предоставляет компоненты React, следующие принципам Material Design:
+Vuetify 3 предоставляет компоненты Vue.js, следующие принципам Material Design 3:
 
-#### Настройка MUI
+#### Настройка Vuetify
 
 ```javascript
-// resources/js/app.jsx
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
+// resources/js/app.js
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#1976d2',
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+import '@mdi/font/css/materialdesignicons.css'
+
+const vuetify = createVuetify({
+  components,
+  directives,
+  theme: {
+    defaultTheme: 'light',
+    themes: {
+      light: {
+        colors: {
+          primary: '#1976d2',
+          secondary: '#dc004e',
         },
-        secondary: {
-            main: '#dc004e',
-        },
+      },
     },
-    typography: {
-        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    },
+  },
 })
 
 createInertiaApp({
-    // ... resolve и другие настройки
-    setup({ el, App, props }) {
-        createRoot(el).render(
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <App {...props} />
-            </ThemeProvider>
-        )
-    },
+  // ... resolve настройки
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(vuetify)
+      .mount(el)
+  },
 })
 ```
 
-#### Использование компонентов MUI
+#### Использование компонентов Vuetify
 
-**Компонент макета с MUI**:
+**Компонент макета с Vuetify**:
 
-```jsx
-// packages/universo-components-frt/base/resources/js/Layouts/AppLayout.jsx
-import { AppBar, Toolbar, Typography, Drawer, List, ListItem } from '@mui/material'
-import { Link } from '@inertiajs/react'
+```vue
+<!-- packages/universo-components-frt/base/resources/js/Layouts/AppLayout.vue -->
+<template>
+  <v-app>
+    <v-app-bar color="primary">
+      <v-toolbar-title>{{ title }}</v-toolbar-title>
+    </v-app-bar>
+    
+    <v-navigation-drawer permanent>
+      <v-list>
+        <v-list-item :href="'/clusters'" title="Кластеры">
+          <template v-slot:prepend>
+            <v-icon>mdi-folder-multiple</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item :href="'/metaverses'" title="Метавселенные">
+          <template v-slot:prepend>
+            <v-icon>mdi-earth</v-icon>
+          </template>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+    
+    <v-main>
+      <v-container>
+        <slot />
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
 
-export default function AppLayout({ children, title }) {
-    return (
-        <>
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6">{title}</Typography>
-                </Toolbar>
-            </AppBar>
-            
-            <Drawer variant="permanent">
-                <List>
-                    <ListItem button component={Link} href="/clusters">
-                        Кластеры
-                    </ListItem>
-                    <ListItem button component={Link} href="/metaverses">
-                        Метавселенные
-                    </ListItem>
-                </List>
-            </Drawer>
-            
-            <main>
-                {children}
-            </main>
-        </>
-    )
-}
+<script setup>
+defineProps({
+  title: {
+    type: String,
+    default: 'Universo Platformo'
+  }
+})
+</script>
 ```
 
 #### Лучшие практики
 
-- **Используйте компоненты MUI последовательно** во всех пакетах фронтенда
+- **Используйте компоненты Vuetify последовательно** во всех пакетах фронтенда
 - **Настройте тему централизованно** в общем пакете или корневом приложении
-- **Используйте адаптивные утилиты MUI** для мобильного UI
-- **Используйте иконки MUI** через `@mui/icons-material`
-- **Следуйте руководствам Material Design** для отступов, цветов, типографики
-- **Интегрируйте MUI с компонентом Link Inertia** для навигации
+- **Используйте адаптивные утилиты Vuetify** для мобильного UI
+- **Используйте иконки Material Design** через `@mdi/font`
+- **Следуйте руководствам Material Design 3** для отступов, цветов, типографики
+- **Интегрируйте Vuetify с компонентом Link Inertia** для навигации
 
 ## Стратегия тестирования
 
