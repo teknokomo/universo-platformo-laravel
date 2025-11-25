@@ -582,7 +582,7 @@ class ClusterController extends Controller
 <!-- Frontend: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
 <template>
   <div>
-    <v-typography variant="h4">Clusters</v-typography>
+    <h4 class="text-h4 mb-4">Clusters</h4>
     
     <v-text-field 
       label="Search" 
@@ -1377,7 +1377,7 @@ class ClusterController extends Controller
 <!-- Фронтенд: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
 <template>
   <div>
-    <v-typography variant="h4">Кластеры</v-typography>
+    <h4 class="text-h4 mb-4">Кластеры</h4>
     
     <v-text-field 
       label="Поиск" 

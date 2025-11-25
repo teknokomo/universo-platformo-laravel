@@ -199,7 +199,7 @@ class ClusterController extends Controller
 <!-- Frontend: packages/clusters-frt/base/resources/js/Pages/Index.vue -->
 <template>
   <div>
-    <v-typography variant="h4">Clusters</v-typography>
+    <h4 class="text-h4 mb-4">Clusters</h4>
     <v-card v-for="cluster in clusters.data" :key="cluster.id">
       <v-card-title>{{ cluster.name }}</v-card-title>
     </v-card>
