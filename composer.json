@@ -18,7 +18,8 @@
         "php": "^8.2",
         "laravel/framework": "^11.0",
         "laravel/passport": "^12.0",
-        "guzzlehttp/guzzle": "^7.8"
+        "guzzlehttp/guzzle": "^7.8",
+        "universo/start-srv": "@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -69,9 +70,19 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": [
+                "PKSA-y2cr-5h3j-g3ys"
+            ]
         }
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "repositories": []
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/start-srv/base"
+        }
+    ]
 }

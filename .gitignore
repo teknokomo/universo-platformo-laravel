@@ -112,6 +112,9 @@ Thumbs.db
 *.smime
 *.vsix
 
+# Laravel Bootstrap Cache
+/bootstrap/cache/*.php
+
 # Laravel Passport
 /storage/oauth-private.key
 /storage/oauth-public.key

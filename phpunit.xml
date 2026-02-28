@@ -10,6 +10,7 @@
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <directory>packages/start-srv/base/tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
@@ -20,7 +21,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="APP_KEY" value="base64:dGVzdGluZ2tleWZvcnVuaXZlcnNvCg=="/>
+        <env name="APP_KEY" value="base64:dGVzdC1rZXktZm9yLXVuaXZlcnNvLXBsYXRmb3JtbyE="/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>

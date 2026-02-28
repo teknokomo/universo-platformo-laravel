@@ -1,0 +1,25 @@
+{
+    "name": "universo/start-srv",
+    "description": "Universo Platformo - Start pages backend package (Supabase authentication, start page routing)",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Universo\\Start\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Universo\\Start\\Providers\\StartServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
