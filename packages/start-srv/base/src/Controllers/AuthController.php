@@ -12,8 +12,8 @@ use Universo\Start\Services\SupabaseAuthService;
  * AuthController - Supabase authentication proxy controller
  *
  * Provides API endpoints for sign-in, sign-up, sign-out, and user retrieval.
- * All Supabase credentials are kept server-side; the frontend receives only
- * the access/refresh tokens it needs.
+ * All Supabase credentials and raw tokens are kept server-side; the frontend
+ * receives only sanitized user data and an `authenticated` boolean.
  */
 class AuthController extends Controller
 {
@@ -151,7 +151,6 @@ class AuthController extends Controller
                     return response()->json([
                         'user'          => $data['user'],
                         'authenticated' => true,
-                        'access_token'  => $data['access_token'],
                     ]);
                 }
             }

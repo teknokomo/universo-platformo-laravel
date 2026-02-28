@@ -3,7 +3,9 @@
 namespace Universo\Start\Tests\Feature;
 
 use Illuminate\Support\Facades\Http;
+use Mockery;
 use Tests\TestCase;
+use Universo\Start\Services\SupabaseAuthService;
 
 class AuthControllerTest extends TestCase
 {
@@ -55,35 +57,98 @@ class AuthControllerTest extends TestCase
     }
 
     /**
-     * Login response must not contain raw Supabase tokens.
-     * The frontend never needs to see raw tokens — auth is session-based.
+     * Successful login response must not contain raw Supabase tokens.
+     * Tokens stay in the server-side session only.
      */
-    public function test_login_response_does_not_contain_raw_tokens(): void
+    public function test_login_success_does_not_expose_raw_tokens(): void
     {
-        // When credentials are wrong, the service returns an error — just verify structure
+        $mock = Mockery::mock(SupabaseAuthService::class);
+        $mock->shouldReceive('signInWithPassword')
+            ->once()
+            ->andReturn([
+                'data' => [
+                    'access_token'  => 'mock-access-token',
+                    'refresh_token' => 'mock-refresh-token',
+                    'expires_in'    => 3600,
+                    'user'          => ['id' => 'user-1', 'email' => 'test@example.com'],
+                ],
+                'error' => null,
+            ]);
+        $this->app->instance(SupabaseAuthService::class, $mock);
+
         $response = $this->postJson('/api/v1/auth/login', [
             'email'    => 'test@example.com',
-            'password' => 'wrongpassword',
+            'password' => 'password123',
         ]);
 
-        // Either 401 (bad credentials, proxied from Supabase) or if Supabase is unreachable 401
-        // In both cases: no access_token or refresh_token should be in the response
+        $response->assertStatus(200)
+            ->assertJson(['authenticated' => true]);
         $this->assertArrayNotHasKey('access_token', $response->json());
         $this->assertArrayNotHasKey('refresh_token', $response->json());
     }
 
     /**
-     * Register response must not contain raw Supabase tokens.
+     * Successful register response must not contain raw Supabase tokens.
      */
-    public function test_register_response_does_not_contain_raw_tokens(): void
+    public function test_register_success_does_not_expose_raw_tokens(): void
     {
+        $mock = Mockery::mock(SupabaseAuthService::class);
+        $mock->shouldReceive('signUp')
+            ->once()
+            ->andReturn([
+                'data' => [
+                    'access_token'  => 'mock-access-token',
+                    'refresh_token' => 'mock-refresh-token',
+                    'user'          => ['id' => 'user-2', 'email' => 'new@example.com'],
+                ],
+                'error' => null,
+            ]);
+        $this->app->instance(SupabaseAuthService::class, $mock);
+
         $response = $this->postJson('/api/v1/auth/register', [
-            'email'    => 'test@example.com',
+            'email'    => 'new@example.com',
             'password' => 'password123',
         ]);
 
-        // 422 (validation pass, but Supabase unavailable/error) or 201
-        // In both cases: no raw tokens should be exposed
+        $response->assertStatus(201)
+            ->assertJson(['authenticated' => true]);
+        $this->assertArrayNotHasKey('access_token', $response->json());
+        $this->assertArrayNotHasKey('refresh_token', $response->json());
+    }
+
+    /**
+     * The /user endpoint after token refresh must not expose raw tokens.
+     */
+    public function test_user_endpoint_after_refresh_does_not_expose_raw_tokens(): void
+    {
+        // Simulate a session with an expired access token and a valid refresh token
+        session([
+            'supabase_access_token'  => 'expired-token',
+            'supabase_refresh_token' => 'valid-refresh-token',
+        ]);
+
+        $mock = Mockery::mock(SupabaseAuthService::class);
+        $mock->shouldReceive('getUser')
+            ->once()
+            ->with('expired-token')
+            ->andReturn(['data' => null, 'error' => 'Token expired']);
+        $mock->shouldReceive('refreshToken')
+            ->once()
+            ->with('valid-refresh-token')
+            ->andReturn([
+                'data' => [
+                    'access_token'  => 'new-access-token',
+                    'refresh_token' => 'new-refresh-token',
+                    'user'          => ['id' => 'user-1', 'email' => 'test@example.com'],
+                ],
+                'error' => null,
+            ]);
+        $this->app->instance(SupabaseAuthService::class, $mock);
+
+        $response = $this->getJson('/api/v1/auth/user');
+
+        $response->assertStatus(200)
+            ->assertJson(['authenticated' => true]);
         $this->assertArrayNotHasKey('access_token', $response->json());
         $this->assertArrayNotHasKey('refresh_token', $response->json());
     }

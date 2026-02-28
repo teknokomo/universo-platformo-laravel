@@ -58,9 +58,7 @@ All routes are prefixed with `/api/v1/auth`.
 // Response 200
 {
     "user": { "id": "...", "email": "user@example.com" },
-    "access_token": "...",
-    "refresh_token": "...",
-    "expires_in": 3600
+    "authenticated": true
 }
 
 // Response 401 (invalid credentials)
@@ -115,7 +113,7 @@ The package is registered automatically via Laravel's package discovery. It is d
 1. **Frontend** sends credentials to `/api/v1/auth/login`
 2. **AuthController** forwards them to Supabase REST API via `SupabaseAuthService`
 3. **Supabase** returns access token, refresh token, and user data
-4. **AuthController** stores tokens in the Laravel session and returns them to the frontend
+4. **AuthController** stores tokens in the Laravel session and returns only sanitized user data to the frontend
 5. **Frontend** can call `/api/v1/auth/user` at any time to check authentication status
 6. If the access token has expired, the backend automatically tries to refresh it using the stored refresh token
 
