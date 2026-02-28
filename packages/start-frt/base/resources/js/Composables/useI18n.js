@@ -15,10 +15,10 @@ function get(obj, path, fallback) {
     const parts = path.split('.')
     let current = obj
     for (const part of parts) {
-        if (current == null || typeof current !== 'object') return fallback
+        if (current === null || current === undefined || typeof current !== 'object') return fallback
         current = current[part]
     }
-    return current ?? fallback
+    return current !== null && current !== undefined ? current : fallback
 }
 
 export function useI18n() {
