@@ -8,8 +8,8 @@ use Universo\Start\Controllers\AuthController;
 | Start Package API Routes
 |--------------------------------------------------------------------------
 |
-| These routes are loaded by the StartServiceProvider and are prefixed
-| with /api/v1 by the root api.php route file.
+| These routes are loaded by the StartServiceProvider, which applies
+| the /api/v1 prefix via its own Route::prefix('api/v1') definition.
 |
 */
 

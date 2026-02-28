@@ -3,7 +3,6 @@
 namespace Universo\Start\Services;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
 
 /**

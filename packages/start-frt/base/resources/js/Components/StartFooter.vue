@@ -5,8 +5,8 @@
                 © {{ year }} Universo Platformo. {{ t('footer.rights') }}
             </p>
             <div class="start-footer__links">
-                <a href="/legal" class="start-footer__link">{{ t('footer.privacy') }}</a>
-                <a href="/legal" class="start-footer__link">{{ t('footer.terms') }}</a>
+                <a href="/legal/privacy" class="start-footer__link">{{ t('footer.privacy') }}</a>
+                <a href="/legal/terms" class="start-footer__link">{{ t('footer.terms') }}</a>
             </div>
         </div>
     </footer>

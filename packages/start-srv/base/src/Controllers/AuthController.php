@@ -108,8 +108,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $accessToken = session('supabase_access_token')
-            ?? $request->bearerToken();
+        $accessToken = session('supabase_access_token');
 
         if ($accessToken) {
             $this->auth->signOut($accessToken);
@@ -126,8 +125,7 @@ class AuthController extends Controller
      */
     public function user(Request $request): JsonResponse
     {
-        $accessToken = session('supabase_access_token')
-            ?? $request->bearerToken();
+        $accessToken = session('supabase_access_token');
 
         if (! $accessToken) {
             return response()->json(['user' => null, 'authenticated' => false]);
@@ -172,8 +170,7 @@ class AuthController extends Controller
      */
     public function refresh(Request $request): JsonResponse
     {
-        $refreshToken = session('supabase_refresh_token')
-            ?? $request->string('refresh_token')->toString();
+        $refreshToken = session('supabase_refresh_token');
 
         if (! $refreshToken) {
             return response()->json(['error' => 'No refresh token available'], 401);

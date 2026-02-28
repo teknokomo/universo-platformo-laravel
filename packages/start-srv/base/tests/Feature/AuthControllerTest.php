@@ -2,7 +2,6 @@
 
 namespace Universo\Start\Tests\Feature;
 
-use Illuminate\Support\Facades\Http;
 use Mockery;
 use Tests\TestCase;
 use Universo\Start\Services\SupabaseAuthService;

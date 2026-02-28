@@ -13,7 +13,7 @@
 <body>
     {{-- Translations injected for use by the frontend i18n composable --}}
     <script>
-        window.__translations = {!! json_encode(trans('landing'), JSON_UNESCAPED_UNICODE) !!};
+        window.__translations = {!! json_encode(trans('landing'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!};
     </script>
     <div id="app"></div>
 </body>
