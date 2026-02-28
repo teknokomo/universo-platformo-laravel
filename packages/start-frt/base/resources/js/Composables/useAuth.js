@@ -70,7 +70,7 @@ export async function register(email, password) {
     try {
         const response = await axios.post(`${API_BASE}/register`, { email, password })
         const data = response.data
-        if (data.access_token) {
+        if (data.authenticated) {
             authStore.user = data.user
             authStore.isAuthenticated = true
         }

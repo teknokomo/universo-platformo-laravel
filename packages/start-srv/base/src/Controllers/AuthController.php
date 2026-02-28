@@ -56,9 +56,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user'          => $data['user'],
-            'access_token'  => $data['access_token'],
-            'refresh_token' => $data['refresh_token'],
-            'expires_in'    => $data['expires_in'] ?? 3600,
+            'authenticated' => true,
         ]);
     }
 
@@ -99,8 +97,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user'          => $data['user'] ?? null,
-            'access_token'  => $accessToken,
-            'refresh_token' => $data['refresh_token'] ?? null,
+            'authenticated' => $accessToken !== null,
             'message'       => 'Registration successful. Please check your email if confirmation is required.',
         ], 201);
     }
@@ -200,9 +197,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user'          => $data['user'],
-            'access_token'  => $data['access_token'],
-            'refresh_token' => $data['refresh_token'],
-            'expires_in'    => $data['expires_in'] ?? 3600,
+            'authenticated' => true,
         ]);
     }
 }

@@ -44,7 +44,7 @@
                         class="auth-page__input"
                         :placeholder="t('auth.passwordPlaceholder')"
                         required
-                        autocomplete="current-password"
+                        :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
                         minlength="6"
                     />
                 </div>
@@ -70,11 +70,10 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from '../Composables/useI18n.js'
 import { login, register } from '../Composables/useAuth.js'
 
-const auth = inject('auth')
 const { t } = useI18n()
 
 const mode = ref('login')
@@ -103,7 +102,7 @@ async function handleSubmit() {
                 errorMessage.value = result.error
             } else {
                 successMessage.value = t('auth.registerSuccess')
-                if (result.access_token) {
+                if (result.authenticated) {
                     window.location.href = '/'
                 }
             }
